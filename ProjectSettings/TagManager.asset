@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 3
   tags:
   - Tile
+  - Loot
+  - Food
   layers:
   - Default
   - TransparentFX
@@ -12,7 +14,7 @@ TagManager:
   - 
   - Water
   - UI
-  - 
+  - Ground
   - 
   - 
   - 
@@ -41,6 +43,12 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Player
+    uniqueID: 866909575
+    locked: 0
+  - name: Ground
+    uniqueID: 371359375
     locked: 0
   m_RenderingLayers:
   - Default

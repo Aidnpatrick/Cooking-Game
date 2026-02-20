@@ -23,6 +23,7 @@ public class PlayerScript : MonoBehaviour
 
     void Start()
     {
+        transform.position = new Vector3(4,4,0);
         rb = GetComponent<Rigidbody2D>();
         moveSpeed = baseMoveSpeed;
     }
@@ -46,7 +47,7 @@ public class PlayerScript : MonoBehaviour
 
         moveInput = moveInput.normalized;
 
-        if (canGrab && Keyboard.current.eKey.wasPressedThisFrame && canMove)
+        if (canGrab && Keyboard.current.eKey.wasPressedThisFrame && canMove && inventoryScript.inventory.Count == 0)
         {
             inventoryScript.AddItem(currentLoot);
             Destroy(currentLootObject);
@@ -63,33 +64,29 @@ public class PlayerScript : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        /*
+        
         if (other.CompareTag("Loot"))
         {
             currentLoot = other.gameObject.name.Replace("Loot", "");
             currentLootObject = other.gameObject;
             canGrab = true;
         }
-        */
 
         if (other.CompareTag("Tile"))
         {
-            if (other.transform.childCount > 0 &&
-                other.transform.GetChild(0).name.Contains("Gravel"))
-            {
-                moveSpeed = 8f;
-            }
             
         }
     }
 
     void OnTriggerExit2D(Collider2D other)
     {
+        /*
         if (other.CompareTag("Loot"))
         {
             canGrab = false;
         }
-
+        */
+            
         if (other.CompareTag("Tile"))
         {
             moveSpeed = baseMoveSpeed;
