@@ -9,6 +9,8 @@ using UnityEngine.InputSystem;
 
 public class GameControlScript : MonoBehaviour
 {
+    public GameObject startButton;
+    public GameObject gameCanvas, menuCanvas;
     public GameObject foodOrderContainer;
     public GameObject image;
     public GameObject tilePrefab, emptyTilePrefab, foodOrderPrefab;
@@ -44,7 +46,7 @@ public class GameControlScript : MonoBehaviour
         {9, " "}
     };
 
-    public string[] cannotBeCookedList = {"Lettuce"};
+    private string[] cannotBeCookedList = {"Lettuce", "Bun"};
 
     public float foodOrderCooldown = 0; 
     public bool toggleFoodOrder = false;
@@ -80,9 +82,8 @@ public class GameControlScript : MonoBehaviour
 
     void Start()
     {
-
-        toggleFoodOrder = false;
-
+        gameCanvas.SetActive(false);
+        menuCanvas.SetActive(true);
         int index = 0;
         for(int i = 0; i < 10; i ++)
         {
@@ -105,6 +106,17 @@ public class GameControlScript : MonoBehaviour
                 index++;
             }
         }
+    }
+
+    public void StartGame()
+    {
+        startButton.SetActive(false);
+        menuCanvas.SetActive(false);
+        gameCanvas.SetActive(true);
+
+        toggleFoodOrder = false;
+
+
         for(int i = 0; i < recipes.Count; i++)
             recipes[i] = sortIngredients(recipes[i]);
 
@@ -185,7 +197,7 @@ public class GameControlScript : MonoBehaviour
                 imageCloneRenderer.sprite = Resources.Load<Sprite>("Images/" + stringIndex);
             }
         }
-        
+
     }
     public List<string> sortIngredients(List<string> storage)
     {
@@ -220,7 +232,7 @@ public class GameControlScript : MonoBehaviour
                 money += servedStorage.Count * 10;
                 orders.Remove(orders[i]);
                 foodOrderCooldown += 10;
-                return;           
+                return;
             }
             else
             {
@@ -229,12 +241,12 @@ public class GameControlScript : MonoBehaviour
         }
         points--;
     }
-    public GameObject ClosestTile()
+    public GameObject ClosestTile(GameObject currentPlayer)
     {
         GameObject closest = null;
         float shortestDistance = Mathf.Infinity;
 
-        Vector3 playerPos = player.transform.position;
+        Vector3 playerPos = currentPlayer.transform.position;
 
         foreach (GameObject tile in tiles)
         {
@@ -246,7 +258,6 @@ public class GameControlScript : MonoBehaviour
                 closest = tile;
             }
         }
-
         return closest;
     }
 }

@@ -17,10 +17,14 @@ public class CameraScript : MonoBehaviour
 
     public bool canEdit = true;
     public bool isOnTile = false;
-    
     void Start()
     {
         transform.position = new Vector3(4.5f, 3.3f, -5);
+        canEdit = false;
+    }
+    public void StartGame()
+    {
+        canEdit = true;
     }
 
     // Update is called once per frame
@@ -29,18 +33,28 @@ public class CameraScript : MonoBehaviour
         //transform.position = player.transform.position + playerCameraPos;
         
         Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        RaycastHit2D hit = Physics2D.Raycast(mousePos, Vector2.zero);
+        //RaycastHit2D hit = Physics2D.Raycast(mousePos, Vector2.zero);
 
         Keyboard keyboard = Keyboard.current;
 
-        if(hit.collider == null) return;
-        if(!hit.collider.name.Contains("Tile")) return;
-        if(Vector3.Distance(hit.collider.transform.position, player.transform.position) >= 3)
+        if(!canEdit) return;
+
+        GameObject target = gameControlScript.ClosestTile(player);
+        
+
+        if(target == null) return;
+        if(!target.name.Contains("Tile")) return;
+
+        
+        if(Vector3.Distance(target.transform.position, player.transform.position) >= 3)
             return;
         else
-            gameControlScript.makeTileChosen(hit.collider.gameObject);
+            gameControlScript.makeTileChosen(target.gameObject);
 
-        TileScript tileScript = hit.collider.GetComponent<TileScript>();
+        //TileScript tileScript = target.GetComponent<TileScript>();
+
+        TileScript tileScript = target.GetComponent<TileScript>();
+
         if (tileScript == null) return;
 
         string currentItem;
@@ -51,9 +65,9 @@ public class CameraScript : MonoBehaviour
         
         if(invScript.inventory.Count > 0)
         {
-            if(Input.GetMouseButtonDown(0) && hit.collider.transform.childCount == 1)
+            if(keyboard.eKey.wasPressedThisFrame && target.transform.childCount == 1)
             {
-                string childItemName = hit.collider.transform.GetChild(0).name;
+                string childItemName = target.transform.GetChild(0).name;
                 childItemName = childItemName.Replace("(Clone)", "");
                 Transform itemPlate = invScript.findPlayerTargetChild(currentItem);
                 if(currentItem.Contains("Plate") && childItemName.Contains("Chopped"))
@@ -66,8 +80,8 @@ public class CameraScript : MonoBehaviour
 
                     Debug.Log(itemPlate);
                     Debug.Log("Added " + childItemName + "To Pluh");
-                    Destroy(hit.collider.transform.GetChild(0).gameObject);
-
+                    Destroy(target.transform.GetChild(0).gameObject);
+                    return;
                 }
                 
                 else if(invScript.inventory.Count == 0)
@@ -76,12 +90,13 @@ public class CameraScript : MonoBehaviour
                     Transform newPlate = invScript.findPlayerTargetChild(currentItem);
                     ItemScript ps = newPlate.GetComponent<ItemScript>();
                     ps = itemPlate.GetComponent<ItemScript>();
-                    Destroy(hit.collider.transform.GetChild(0).gameObject);
+                    Destroy(target.transform.GetChild(0).gameObject);
+                    return;
                 }
 
             }
             //giving plate
-            if(Input.GetMouseButtonDown(1) && hit.collider.transform.childCount == 0)
+            if(keyboard.eKey.wasPressedThisFrame && target.transform.childCount == 0)
             {
                 Transform item = invScript.findPlayerTargetChild(currentItem);
                 item.name = item.name.Substring(0, item.name.Length - 1);
@@ -99,7 +114,7 @@ public class CameraScript : MonoBehaviour
                     Debug.LogError("This isnt working: " + indexFood + " " + item.name);
                 }
 
-                GameObject clone = Instantiate(prefab, hit.collider.transform);
+                GameObject clone = Instantiate(prefab, target.transform);
                 clone.name = item.name;
                 clone.name = invScript.orderWords(clone.name);
                 clone.GetComponent<BoxCollider2D>().enabled = false;
@@ -112,15 +127,19 @@ public class CameraScript : MonoBehaviour
                 invScript.equippedItem = invScript.inventory.Count == 0 ? 1 : Mathf.Clamp(invScript.equippedItem, 1, invScript.inventory.Count);
                 invScript.UpdatePlayerChildren();
                 Debug.Log("Placed down " + clone.name);
+                return;
             }
+
+
+
             //giving food to plate
-            if(Input.GetMouseButtonDown(1) && hit.collider.transform.childCount == 1)
+            if(keyboard.eKey.wasPressedThisFrame && target.transform.childCount == 1)
             {
-                string childItemName = hit.collider.transform.GetChild(0).name;
+                string childItemName = target.transform.GetChild(0).name;
                 Transform item = invScript.findPlayerTargetChild(currentItem);
                 if(childItemName.Contains("Plate") && !currentItem.Contains("Plate"))
                 {
-                    ItemScript ps = hit.collider.GetComponentInChildren<ItemScript>();
+                    ItemScript ps = target.GetComponentInChildren<ItemScript>();
                     if(ps.storage.Count == 4)
                         return;
                         
@@ -129,13 +148,14 @@ public class CameraScript : MonoBehaviour
                     invScript.inventory.RemoveAt(invScript.equippedItem - 1);
                     Destroy(item.gameObject);
                 }
+                return;
             }
         }
         if(invScript.inventory.Count == 0)
         {
-            if(Input.GetMouseButtonDown(0) && hit.collider.transform.childCount > 0)
+            if(keyboard.eKey.wasPressedThisFrame && target.transform.childCount > 0)
             {
-                string childItemName = hit.collider.transform.GetChild(0).name;
+                string childItemName = target.transform.GetChild(0).name;
                 childItemName = childItemName.Replace("(Clone)", "");
                 Transform itemPlate = invScript.findPlayerTargetChild(currentItem);
                 if(currentItem.Contains("Plate"))
@@ -150,23 +170,34 @@ public class CameraScript : MonoBehaviour
                 }
                 /*
                 if(itemPlate.name.Contains("Plate"))
-                    invScript.AddItem(childItemName, hit.collider.transform.GetChild(0).GetComponent<ItemScript>());
+                    invScript.AddItem(childItemName, target.transform.GetChild(0).GetComponent<ItemScript>());
                 else 
                     invScript.AddItem(childItemName);*/
                 
-                invScript.AddItem(childItemName, hit.collider.transform.GetChild(0).GetComponent<ItemScript>());
-                Destroy(hit.collider.transform.GetChild(0).gameObject);
+                invScript.AddItem(childItemName, target.transform.GetChild(0).GetComponent<ItemScript>());
+                Destroy(target.transform.GetChild(0).gameObject);
+                return;
+            }
+            if(keyboard.eKey.wasPressedThisFrame && target.transform.childCount == 0 && invScript.inventory.Count == 0)
+            {
+                Debug.Log("Tried calling");
+                if(tileScript.typeOfFood != "")
+                {
+                    Debug.Log("Called food creation");
+                    invScript.AddItem(tileScript.typeOfFood);
+                }
+                return;
             }
 
-            if(keyboard.eKey.wasPressedThisFrame && hit.collider.transform.childCount > 0)
+            if(keyboard.eKey.wasPressedThisFrame && target.transform.childCount > 0)
             {
-                string childItemName = hit.collider.transform.GetChild(0).name;
+                string childItemName = target.transform.GetChild(0).name;
 
                 if(tileScript.typeOfTile == 2 && !childItemName.Contains("Chopped") && !childItemName.Contains("Plate"))
                 {
 
                     tileScript.StartCooking(1);
-                    //hit.collider.transform.GetChild(0).name = childItemName.Replace("(Clone)", "") + "Chopped";
+                    //target.transform.GetChild(0).name = childItemName.Replace("(Clone)", "") + "Chopped";
                 }
 
                 if(tileScript.typeOfTile == 3 && !childItemName.Contains("Cooked") && !childItemName.Contains("Plate"))
@@ -175,22 +206,15 @@ public class CameraScript : MonoBehaviour
                     if(gameControlScript.canBeCooked(childItemName))
                         tileScript.StartCooking(5);
                 }
-
+                /*
                 if(tileScript.typeOfTile == 20 && childItemName.Contains("Plate"))
                 {
                     Debug.Log("This food is being checked");
-                    gameControlScript.CheckFood(hit.collider.GetComponentInChildren<ItemScript>().storage);
-                    Destroy(hit.collider.transform.GetChild(0).gameObject);
+                    gameControlScript.CheckFood(target.GetComponentInChildren<ItemScript>().storage);
+                    Destroy(target.transform.GetChild(0).gameObject);
                 }
-            }
-            if(keyboard.eKey.wasPressedThisFrame && invScript.inventory.Count == 0)
-            {
-                if(tileScript.typeOfFood != "")
-                {
-                    Debug.Log(tileScript.typeOfFood);
-                    invScript.AddItem(tileScript.typeOfFood);
-                }
-                    
+                */
+                return;
             }
         }
         

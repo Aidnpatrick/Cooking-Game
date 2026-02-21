@@ -26,11 +26,12 @@ public class PlayerScript : MonoBehaviour
         transform.position = new Vector3(4,4,0);
         rb = GetComponent<Rigidbody2D>();
         moveSpeed = baseMoveSpeed;
+        canMove = false;
     }
 
     public void StartGame()
     {
-        gameObject.SetActive(true);
+        canMove = true;
     }
 
     void Update()

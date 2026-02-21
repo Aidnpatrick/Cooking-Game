@@ -41,6 +41,19 @@ public class TileScript : MonoBehaviour
     
     void Update()
     {
+        if(transform.childCount > 0)
+        {
+            isFull = true;
+            if(typeOfTile == 20 && transform.GetChild(0).name.Contains("Plate"))
+            {
+                Debug.Log("This food is being checked");
+                gameControlScript.CheckFood(transform.GetComponentInChildren<ItemScript>().storage);
+                Destroy(transform.GetChild(0).gameObject);
+                return;
+            }
+        }
+
+
         if(Vector3.Distance(player.transform.position, transform.position) >= 3)
             GetComponent<SpriteRenderer>().color = Color.white;    
 
@@ -48,8 +61,18 @@ public class TileScript : MonoBehaviour
         {
             isFull = false;
             isCooking = false;
+            isDone = false;
             progressTime = 0;
             return;
+        }
+        if(transform.childCount > 0 && !isCooking && !isDone)
+        {
+            if(!transform.GetChild(0).tag.Contains("Food")) return;
+
+            if(typeOfTile == 2)
+                StartCooking(1);
+            if(typeOfTile == 3 && gameControlScript.canBeCooked(transform.GetChild(0).name))
+                StartCooking(5);
         }
 
         isFull = true;
