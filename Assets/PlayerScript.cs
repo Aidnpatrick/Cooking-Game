@@ -54,8 +54,12 @@ public class PlayerScript : MonoBehaviour
             Destroy(currentLootObject);
             canGrab = false;
         }
-        
         healthCoolDown -= Time.deltaTime;
+
+        if(Keyboard.current.shiftKey.isPressed)
+        {
+            
+        }
     }
 
     void FixedUpdate()

@@ -13,7 +13,7 @@ public class TileScript : MonoBehaviour
     public string typeOfFood = "";
     public bool isCooking = true, isDone = false;
     public string childItemName = "";
-    public float progressTime = 0, smokeCooldown = 0, choppedCooldown = 0;
+    public float progressTime = 0, smokeCooldown = 0, choppedCooldown = 0, timeAfterDone = 0;
     public bool isChosen = false;
     void Start()
     {
@@ -52,8 +52,7 @@ public class TileScript : MonoBehaviour
                 return;
             }
         }
-
-
+        
         if(Vector3.Distance(player.transform.position, transform.position) >= 3)
             GetComponent<SpriteRenderer>().color = Color.white;    
 

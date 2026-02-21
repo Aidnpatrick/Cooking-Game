@@ -39,14 +39,14 @@ public class CameraScript : MonoBehaviour
 
         if(!canEdit) return;
 
-        GameObject target = gameControlScript.ClosestTile(player);
+        GameObject target = gameControlScript.ClosestTile();
         
 
         if(target == null) return;
         if(!target.name.Contains("Tile")) return;
 
         
-        if(Vector3.Distance(target.transform.position, player.transform.position) >= 3)
+        if(Vector3.Distance(target.transform.position, player.transform.position) >= 2)
             return;
         else
             gameControlScript.makeTileChosen(target.gameObject);
@@ -76,6 +76,7 @@ public class CameraScript : MonoBehaviour
                     if(ps.storage.Count == 4)
                         return;
                     if(ps.foodCount("Bun") > 2) return;
+                    
                     ps.storage.Add(childItemName);
 
                     Debug.Log(itemPlate);
@@ -195,7 +196,6 @@ public class CameraScript : MonoBehaviour
 
                 if(tileScript.typeOfTile == 2 && !childItemName.Contains("Chopped") && !childItemName.Contains("Plate"))
                 {
-
                     tileScript.StartCooking(1);
                     //target.transform.GetChild(0).name = childItemName.Replace("(Clone)", "") + "Chopped";
                 }

@@ -47,7 +47,7 @@ public class InventoryScript : MonoBehaviour
                 t.localRotation = Quaternion.identity;
                 if(inventory.Count > 0)
                 {
-
+                    
                 }
                 
             }

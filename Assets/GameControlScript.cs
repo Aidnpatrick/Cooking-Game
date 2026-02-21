@@ -5,8 +5,6 @@ using System.Linq;
 using TMPro;
 using UnityEngine.InputSystem;
 
-
-
 public class GameControlScript : MonoBehaviour
 {
     public GameObject startButton;
@@ -72,7 +70,8 @@ public class GameControlScript : MonoBehaviour
         new List<string> {"LettuceChopped", "BeefCookedChopped"},
         new List<string> {"Bun", "BeefCooked", "Bun"},
         new List<string> {"BeefCooked"},
-        new List<string> {"Bun", "BeefCookedChopped", "Bun"}
+        new List<string> {"Bun", "BeefCookedChopped", "Bun"},
+        new List<string> {"BeefCookedChopped"},
     };
 
     private List<List<string>> orders = new List<List<string>>()
@@ -144,7 +143,7 @@ public class GameControlScript : MonoBehaviour
         if(foodOrderCooldown <= 0 && orders.Count < 5)
         {
             MakeNewOrder();
-            foodOrderCooldown = Random.Range(10,26);
+            foodOrderCooldown = Random.Range(10,20);
         }
 
         RefreshOrders();
@@ -241,12 +240,12 @@ public class GameControlScript : MonoBehaviour
         }
         points--;
     }
-    public GameObject ClosestTile(GameObject currentPlayer)
+    public GameObject ClosestTile()
     {
         GameObject closest = null;
         float shortestDistance = Mathf.Infinity;
 
-        Vector3 playerPos = currentPlayer.transform.position;
+        Vector3 playerPos = player.transform.position;
 
         foreach (GameObject tile in tiles)
         {
