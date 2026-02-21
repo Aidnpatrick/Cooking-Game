@@ -18,24 +18,7 @@ public class ItemScript : MonoBehaviour
         for(int i = 0; i < storage.Count; i++)
             storage[i] = storage[i].Replace("1", "");
 
-        storage.Sort();
-        List<string> buns = storage.Where(s => s.Contains("Bun")).ToList();
-        List<string> others = storage.Where(s => !s.Contains("Bun")).ToList();
-
-        storage.Clear();
-        if (buns.Count > 0)
-        {
-            storage.Add(buns[0]);
-            others.ForEach(item => storage.Add(item));
-            for (int i = 1; i < buns.Count; i++)
-            {
-                storage.Add(buns[i]);
-            }
-        }
-        else
-        {
-            storage.AddRange(others);
-        }
+        gameControlScript.sortIngredients(storage);
         UpdateChildren();
     }
     public int foodCount(string target)

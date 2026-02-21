@@ -108,9 +108,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1024ea2b72d159e42978fd3045b36d82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  gameControlScript: {fileID: 0}
-  playerScript: {fileID: 0}
-  inventoryScript: {fileID: 0}
+  smokePrefab: {fileID: 357155995405675473, guid: ca0c3bd248fa3d0499d00dd12070c899, type: 3}
+  particlePrefab: {fileID: 4564762001589358858, guid: 2364d4c05ff98cb4f980e68f9dad0097, type: 3}
   isFull: 0
   typeOfTile: 1
   typeOfFood: 
@@ -118,6 +117,9 @@ MonoBehaviour:
   isDone: 0
   childItemName: 
   progressTime: 0
+  smokeCooldown: 0
+  choppedCooldown: 0
+  isChosen: 0
   cookDuration: 5
 --- !u!61 &-3816149997614795719
 BoxCollider2D:

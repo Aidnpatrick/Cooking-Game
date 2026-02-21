@@ -47,16 +47,11 @@ public class InventoryScript : MonoBehaviour
                 t.localRotation = Quaternion.identity;
                 if(inventory.Count > 0)
                 {
-                    if(inventory[equippedItem - 1].Contains("TakeDown"))
-                        cameraScript.canEdit = false;
-                    else
-                        cameraScript.canEdit = true;
+
                 }
-                else
-                    cameraScript.canEdit = true;
+                
             }
-            else
-                cameraScript.canEdit = true;
+
         }
         
         if (keyboard.qKey.wasPressedThisFrame)
@@ -187,7 +182,6 @@ public class InventoryScript : MonoBehaviour
 
 
         UpdatePlayerChildren();
-        cameraScript.canEdit = true;
         Debug.Log("This works too");
     }
 

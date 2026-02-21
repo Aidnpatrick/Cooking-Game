@@ -1,6 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
-
+using UnityEngine.UI;
 using System.Linq;
 using TMPro;
 using UnityEngine.InputSystem;
@@ -10,8 +10,11 @@ using UnityEngine.InputSystem;
 public class GameControlScript : MonoBehaviour
 {
     public GameObject foodOrderContainer;
+    public GameObject image;
     public GameObject tilePrefab, emptyTilePrefab, foodOrderPrefab;
+    public GameObject textTemplate;
     public GameObject[] foodList;
+    public GameObject player;
     
     public int points = 0, money = 0;
     public GameObject[] tiles;
@@ -77,6 +80,7 @@ public class GameControlScript : MonoBehaviour
 
     void Start()
     {
+
         toggleFoodOrder = false;
 
         int index = 0;
@@ -101,6 +105,9 @@ public class GameControlScript : MonoBehaviour
                 index++;
             }
         }
+        for(int i = 0; i < recipes.Count; i++)
+            recipes[i] = sortIngredients(recipes[i]);
+
     }
     void Update()
     {
@@ -122,10 +129,10 @@ public class GameControlScript : MonoBehaviour
             spriteRenderer.sprite = Resources.Load<Sprite>("Images/" + adjusted);
         }
         foodOrderCooldown -= Time.deltaTime;
-        if(foodOrderCooldown <= 0)
+        if(foodOrderCooldown <= 0 && orders.Count < 5)
         {
             MakeNewOrder();
-            foodOrderCooldown = Random.Range(0,30);
+            foodOrderCooldown = Random.Range(10,26);
         }
 
         RefreshOrders();
@@ -136,17 +143,23 @@ public class GameControlScript : MonoBehaviour
             foodOrderContainer.SetActive(toggleFoodOrder);
         }
 
+        if(keyboard.pKey.wasPressedThisFrame)
+            orders.Clear();
         
     }
 
-
-    public void makeTileChosen(GameObject tile)
+    public GameObject makeTileChosen(GameObject tile)
     {
+        GameObject target = null;
         for(int i = 0; i < tiles.Length; i++)
         {
-            if(tiles[i] == tile) tiles[i].GetComponent<SpriteRenderer>().color = UnityEngine.Color.lightGray;
+            if(tiles[i] == tile) {
+                tiles[i].GetComponent<SpriteRenderer>().color = UnityEngine.Color.lightGray;
+                target = tiles[i];
+            }
             else tiles[i].GetComponent<SpriteRenderer>().color = UnityEngine.Color.white;
         }
+        return target;
     }
 
     public void MakeNewOrder()
@@ -158,33 +171,82 @@ public class GameControlScript : MonoBehaviour
     public void RefreshOrders()
     {
         foreach(Transform i in foodOrderContainer.transform)        Destroy(i.gameObject);
+
+        GameObject textTemplateClone = Instantiate(textTemplate, foodOrderContainer.transform);
+        textTemplateClone.GetComponent<TMP_Text>().text = "$" + money + "\nPoints: " + points;        
+
         foreach(List<string> listIndex in orders)
         {
             GameObject foodOrderClone = Instantiate(foodOrderPrefab, foodOrderContainer.transform);
-            TMP_Text text = foodOrderClone.transform.GetChild(0).GetComponent<TMP_Text>();
-            int randomDish = Random.Range(0, recipes.Count);
-            text.text = "";
             foreach(string stringIndex in listIndex)
-                text.text += stringIndex + "\n"; 
+            {
+                GameObject imageClone = Instantiate(image, foodOrderClone.transform);
+                var imageCloneRenderer = imageClone.GetComponent<Image>();
+                imageCloneRenderer.sprite = Resources.Load<Sprite>("Images/" + stringIndex);
+            }
         }
+        
+    }
+    public List<string> sortIngredients(List<string> storage)
+    {
+        storage.Sort();
+        List<string> buns = storage.Where(s => s.Contains("Bun")).ToList();
+        List<string> others = storage.Where(s => !s.Contains("Bun")).ToList();
 
+        storage.Clear();
+        if (buns.Count > 0)
+        {
+            storage.Add(buns[0]);
+            others.ForEach(item => storage.Add(item));
+            for (int i = 1; i < buns.Count; i++)
+            {
+                storage.Add(buns[i]);
+            }
+        }
+        else
+        {
+            storage.AddRange(others);
+        }
+        return storage;
     }
 
     public void CheckFood(List<string> servedStorage)
     {
-        foreach(List<string> row in orders)
+        for(int i = 0; i < orders.Count; i++)
         {
-            if(servedStorage.SequenceEqual(row))
+            if(servedStorage.SequenceEqual(orders[i]))
             {
                 points++;
+                money += servedStorage.Count * 10;
+                orders.Remove(orders[i]);
+                foodOrderCooldown += 10;
                 return;           
             }
             else
             {
                 Debug.Log(servedStorage);
-                Debug.Log(row);
             }
         }
         points--;
+    }
+    public GameObject ClosestTile()
+    {
+        GameObject closest = null;
+        float shortestDistance = Mathf.Infinity;
+
+        Vector3 playerPos = player.transform.position;
+
+        foreach (GameObject tile in tiles)
+        {
+            float sqrDist = (tile.transform.position - playerPos).sqrMagnitude;
+
+            if (sqrDist < shortestDistance)
+            {
+                shortestDistance = sqrDist;
+                closest = tile;
+            }
+        }
+
+        return closest;
     }
 }

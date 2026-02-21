@@ -20,7 +20,7 @@ public class CameraScript : MonoBehaviour
     
     void Start()
     {
-        transform.position = new Vector3(4.5f, 2.5f, -5);
+        transform.position = new Vector3(4.5f, 3.3f, -5);
     }
 
     // Update is called once per frame

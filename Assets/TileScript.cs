@@ -7,12 +7,13 @@ public class TileScript : MonoBehaviour
     private PlayerScript playerScript;
     private InventoryScript inventoryScript;
     private GameObject player;
+    public GameObject smokePrefab, particlePrefab;
     public bool isFull = false;
     public int typeOfTile = 1;
     public string typeOfFood = "";
     public bool isCooking = true, isDone = false;
     public string childItemName = "";
-    public float progressTime = 0;
+    public float progressTime = 0, smokeCooldown = 0, choppedCooldown = 0;
     public bool isChosen = false;
     void Start()
     {
@@ -58,10 +59,31 @@ public class TileScript : MonoBehaviour
         if (food.CompareTag("Food") && (typeOfTile == 3 || typeOfTile == 2)&& isCooking && !isDone)
         {
             progressTime += Time.deltaTime;
+            smokeCooldown -= Time.deltaTime;
+            choppedCooldown -= Time.deltaTime;
+
             if(typeOfTile == 2) playerScript.canMove = false;
 
             if (progressTime >= cookDuration)
                 FinishCooking(food);
+            if(typeOfTile == 3 && smokeCooldown <= 0)
+            {
+                GameObject smokeClone = Instantiate(smokePrefab, transform.position, Quaternion.identity);
+                smokeClone.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, Random.Range(0f,0.75f));
+                Rigidbody2D smokeBody = smokeClone.GetComponent<Rigidbody2D>();
+                smokeBody.linearVelocity = smokeClone.transform.up * 2;
+                smokeCooldown = 1f;
+                Destroy(smokeClone, 2);
+            }
+            if(typeOfTile == 2 && choppedCooldown <= 0)
+            {
+                GameObject partClone = Instantiate(particlePrefab, transform.position, Quaternion.identity);
+                Rigidbody2D smokeBody = partClone.GetComponent<Rigidbody2D>();
+                partClone.transform.Rotate(0,0,Random.Range(-20f,21f));
+                smokeBody.linearVelocity = smokeBody.transform.up * 3;
+                choppedCooldown = 0.2f;
+                Destroy(partClone, 1.2f);
+            }
         }
         else
             playerScript.canMove = true;
