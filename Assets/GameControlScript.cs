@@ -4,19 +4,24 @@ using UnityEngine.UI;
 using System.Linq;
 using TMPro;
 using UnityEngine.InputSystem;
+using System.Collections;
 
 public class GameControlScript : MonoBehaviour
 {
     public GameObject startButton;
     public GameObject gameCanvas, menuCanvas;
     public GameObject foodOrderContainer;
+    public GameObject instructions;
+
     public GameObject image;
     public GameObject tilePrefab, emptyTilePrefab, foodOrderPrefab;
     public GameObject textTemplate;
     public GameObject[] foodList;
     public GameObject player;
+    public GameObject enemyPrefab, bloodPrefab;
     
     public int points = 0, money = 0;
+    public float review = 5;
     public GameObject[] tiles;
     private int[] map =
     {
@@ -27,12 +32,12 @@ public class GameControlScript : MonoBehaviour
         2,0,0,0,0,3,
         2,0,0,0,0,3,
         1,0,0,0,0,1,
-        1,0,0,0,0,1,
+        1,0,0,0,0,21,
         1,0,0,0,0,1,
         1,1,20,4,1,1,
     };
 
-    private string[] foodDictionary = { "Beef", "Cheese", "Bun", "Lettuce"};
+    private string[] foodDictionary = { "Beef", "Cheese", "Bun", "Lettuce", "Gun"};
 
     public Dictionary<int, string> foodNum = new Dictionary<int, string>()
     {
@@ -46,8 +51,10 @@ public class GameControlScript : MonoBehaviour
 
     private string[] cannotBeCookedList = {"Lettuce", "Bun"};
 
-    public float foodOrderCooldown = 0; 
+    public float foodOrderCooldown = 0, enemySpawnCooldown = 0;
+    public bool canServe = false;
     public bool toggleFoodOrder = false;
+    private string[] bloodSprites = {"Blood1", "Blood2", "Blood3"};
 
     public bool canBeCooked(string food)
     {
@@ -57,6 +64,7 @@ public class GameControlScript : MonoBehaviour
 
         return boolean;
     }
+
     public string[] getfoodDictionary()
     {
         return foodDictionary;
@@ -72,6 +80,7 @@ public class GameControlScript : MonoBehaviour
         new List<string> {"BeefCooked"},
         new List<string> {"Bun", "BeefCookedChopped", "Bun"},
         new List<string> {"BeefCookedChopped"},
+        new List<string> {"Bun", "BeefCooked", "BeefCooked", "Bun"}
     };
 
     private List<List<string>> orders = new List<List<string>>()
@@ -83,6 +92,10 @@ public class GameControlScript : MonoBehaviour
     {
         gameCanvas.SetActive(false);
         menuCanvas.SetActive(true);
+        instructions.SetActive(false);
+
+        canServe = false;
+        
         int index = 0;
         for(int i = 0; i < 10; i ++)
         {
@@ -105,6 +118,7 @@ public class GameControlScript : MonoBehaviour
                 index++;
             }
         }
+        
     }
 
     public void StartGame()
@@ -114,10 +128,13 @@ public class GameControlScript : MonoBehaviour
         gameCanvas.SetActive(true);
 
         toggleFoodOrder = false;
+        canServe = true;
 
 
         for(int i = 0; i < recipes.Count; i++)
             recipes[i] = sortIngredients(recipes[i]);
+
+        StartCoroutine(enemyDeduction());
 
     }
     void Update()
@@ -131,19 +148,26 @@ public class GameControlScript : MonoBehaviour
         {
             SpriteRenderer spriteRenderer = foodList[i].GetComponent<SpriteRenderer>();
             string adjusted;
+            if(foodList[i].transform.parent == null)
+            {
+                Debug.Log("Null " +  foodList[i]);
+            }
             if(foodList[i].transform.parent.name.Contains("Player"))
                 adjusted = foodList[i].name.Substring(0, foodList[i].name.Length - 1);
             else if(!foodList[i].transform.parent.name.Contains("Player"))
                 adjusted = foodList[i].name.Replace("(Clone)", "");
             else 
                 adjusted = "";
+            //Debug.Log(adjusted);
             spriteRenderer.sprite = Resources.Load<Sprite>("Images/" + adjusted);
+            
+            //Debug.LogError("Error, couldnt' find" + Resources.Load<Sprite>("Images/" + adjusted));
         }
         foodOrderCooldown -= Time.deltaTime;
-        if(foodOrderCooldown <= 0 && orders.Count < 5)
+        if(foodOrderCooldown <= 0 && orders.Count < 5 && canServe)
         {
             MakeNewOrder();
-            foodOrderCooldown = Random.Range(10,20);
+            foodOrderCooldown = Random.Range(10,15);
         }
 
         RefreshOrders();
@@ -157,6 +181,19 @@ public class GameControlScript : MonoBehaviour
         if(keyboard.pKey.wasPressedThisFrame)
             orders.Clear();
         
+        enemySpawnCooldown -= Time.deltaTime;
+
+    }
+    public IEnumerator enemyDeduction()
+    {
+        while(true)
+        {
+            for(int i = 0; i < GameObject.FindGameObjectsWithTag("Enemy").Length; i++)
+                review -= 0.2f;
+            if(Random.Range(0f,2f) < 0.2f)
+                SpawnEnemy();
+            yield return new WaitForSeconds(3f);
+        }
     }
 
     public GameObject makeTileChosen(GameObject tile)
@@ -181,10 +218,10 @@ public class GameControlScript : MonoBehaviour
 
     public void RefreshOrders()
     {
-        foreach(Transform i in foodOrderContainer.transform)        Destroy(i.gameObject);
+        foreach(Transform i in foodOrderContainer.transform) Destroy(i.gameObject);
 
         GameObject textTemplateClone = Instantiate(textTemplate, foodOrderContainer.transform);
-        textTemplateClone.GetComponent<TMP_Text>().text = "$" + money + "\nPoints: " + points;        
+        textTemplateClone.GetComponent<TMP_Text>().text = "$" + money + "\nPoints: " + points + "\nRating: " + review;     
 
         foreach(List<string> listIndex in orders)
         {
@@ -229,8 +266,10 @@ public class GameControlScript : MonoBehaviour
             {
                 points++;
                 money += servedStorage.Count * 10;
+                review = Mathf.Clamp(review + 0.1f, 0f, 5f);
+
                 orders.Remove(orders[i]);
-                foodOrderCooldown += 10;
+                foodOrderCooldown += 3;
                 return;
             }
             else
@@ -238,15 +277,33 @@ public class GameControlScript : MonoBehaviour
                 Debug.Log(servedStorage);
             }
         }
+        SpawnEnemy();
         points--;
     }
-    public GameObject ClosestTile()
+
+    public void SpawnEnemy()
+    {
+        Vector3 position = new Vector3(
+            Random.Range(1,8),
+            Random.Range(1,4),
+            1
+        );
+        GameObject enemyClone = Instantiate(enemyPrefab, position, Quaternion.identity);
+        foreach(GameObject gunIndex in GameObject.FindGameObjectsWithTag("Gun"))
+        {
+            if(Vector3.Distance(enemyClone.transform.position, gunIndex.transform.position) < 3.5f)
+            {
+                Destroy(enemyClone);
+                break;
+            }
+        }
+    }
+    
+    public GameObject ClosestTile(GameObject currentPlayer)
     {
         GameObject closest = null;
         float shortestDistance = Mathf.Infinity;
-
-        Vector3 playerPos = player.transform.position;
-
+        Vector3 playerPos = currentPlayer.transform.position;
         foreach (GameObject tile in tiles)
         {
             float sqrDist = (tile.transform.position - playerPos).sqrMagnitude;
@@ -258,5 +315,30 @@ public class GameControlScript : MonoBehaviour
             }
         }
         return closest;
+    }
+    public void Blood(int amount, GameObject target)
+    {
+        for(int i = 0; i < amount; i++)
+        {
+            Vector3 randomPosition = new Vector3(
+                Random.Range(-0.8f,0.8f),
+                Random.Range(-0.8f,0.8f),
+                
+                1
+            );
+            GameObject bloodClone = Instantiate(bloodPrefab, target.transform.position + randomPosition, Quaternion.identity);
+            bloodClone.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("Images/" + bloodSprites[Random.Range(0, bloodSprites.Length)]);
+            Destroy(bloodClone, 40);
+        }
+    }
+    public void CreateParticle(GameObject prefab, Vector3 position, float force, float deletion, bool isTrans, float angle)
+    {
+        GameObject smokeClone = Instantiate(prefab, position, Quaternion.identity);
+        if(isTrans)
+            smokeClone.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, Random.Range(0.2f,0.75f));
+        smokeClone.transform.Rotate(0,0,Random.Range(-angle,angle + 1));
+        Rigidbody2D smokeBody = smokeClone.GetComponent<Rigidbody2D>();
+        smokeBody.linearVelocity = smokeClone.transform.up * force;
+        Destroy(smokeClone, deletion);
     }
 }

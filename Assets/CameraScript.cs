@@ -17,9 +17,10 @@ public class CameraScript : MonoBehaviour
 
     public bool canEdit = true;
     public bool isOnTile = false;
+    public int playerNumber = 1;
     void Start()
     {
-        transform.position = new Vector3(4.5f, 3.3f, -5);
+        transform.position = new Vector3(4.6f, 3.3f, -5);
         canEdit = false;
     }
     public void StartGame()
@@ -39,14 +40,14 @@ public class CameraScript : MonoBehaviour
 
         if(!canEdit) return;
 
-        GameObject target = gameControlScript.ClosestTile();
-        
+        GameObject target = gameControlScript.ClosestTile(player);
+
 
         if(target == null) return;
         if(!target.name.Contains("Tile")) return;
 
         
-        if(Vector3.Distance(target.transform.position, player.transform.position) >= 2)
+        if(Vector3.Distance(target.transform.position, player.transform.position) >= 1.75f)
             return;
         else
             gameControlScript.makeTileChosen(target.gameObject);
@@ -87,7 +88,7 @@ public class CameraScript : MonoBehaviour
                 
                 else if(invScript.inventory.Count == 0)
                 {
-                    invScript.AddItem(childItemName);
+                    invScript.AddItem(childItemName, null);
                     Transform newPlate = invScript.findPlayerTargetChild(currentItem);
                     ItemScript ps = newPlate.GetComponent<ItemScript>();
                     ps = itemPlate.GetComponent<ItemScript>();
@@ -185,17 +186,18 @@ public class CameraScript : MonoBehaviour
                 if(tileScript.typeOfFood != "")
                 {
                     Debug.Log("Called food creation");
-                    invScript.AddItem(tileScript.typeOfFood);
+                    invScript.AddItem(tileScript.typeOfFood, null);
                 }
                 return;
             }
-
+            /*
             if(keyboard.eKey.wasPressedThisFrame && target.transform.childCount > 0)
             {
                 string childItemName = target.transform.GetChild(0).name;
 
                 if(tileScript.typeOfTile == 2 && !childItemName.Contains("Chopped") && !childItemName.Contains("Plate"))
                 {
+                    Debug.Log("USING CHOPPER"); 
                     tileScript.StartCooking(1);
                     //target.transform.GetChild(0).name = childItemName.Replace("(Clone)", "") + "Chopped";
                 }
@@ -206,16 +208,17 @@ public class CameraScript : MonoBehaviour
                     if(gameControlScript.canBeCooked(childItemName))
                         tileScript.StartCooking(5);
                 }
-                /*
+                
                 if(tileScript.typeOfTile == 20 && childItemName.Contains("Plate"))
                 {
                     Debug.Log("This food is being checked");
                     gameControlScript.CheckFood(target.GetComponentInChildren<ItemScript>().storage);
                     Destroy(target.transform.GetChild(0).gameObject);
                 }
-                */
+                
                 return;
             }
+            */
         }
         
 

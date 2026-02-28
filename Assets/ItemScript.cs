@@ -43,6 +43,8 @@ public class ItemScript : MonoBehaviour
                 Resources.Load<GameObject>(foodIndexMain),
                 gameObject.transform
             );
+            //clone.transform.localPosition = new Vector3(0,0,1);
+
             clone.name = stringIndex;
             clone.name = inventoryScript.orderWords(clone.name);
             clone.transform.position += new Vector3(0,0.07f * index, 0);

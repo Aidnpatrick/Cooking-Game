@@ -1,8 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
-using TMPro;
-using TMPro.EditorUtilities;
 
 public class InventoryScript : MonoBehaviour
 {
@@ -14,8 +12,6 @@ public class InventoryScript : MonoBehaviour
     public List<string> inventory = new List<string>();
     public int equippedItem = 1;
     public int ammo = 10;
-    public int materials = 1000;
-    public int coins = 1000;
     private int maxInventorySize = 5;
     void Start()
     {
@@ -56,6 +52,7 @@ public class InventoryScript : MonoBehaviour
         
         if (keyboard.qKey.wasPressedThisFrame)
             DropEquippedItem();
+            
     }
     public GameObject AddItem(string itemName, ItemScript ps = null)
     {
@@ -170,6 +167,7 @@ public class InventoryScript : MonoBehaviour
             dropped.name = itemName + "Loot";
             dropped.GetComponent<BoxCollider2D>().enabled = true;
             dropped.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("Images/" + itemName.Replace("Loot", ""));
+            dropped.transform.Rotate(0,0,Random.Range(-300,300));
         }
 
         Debug.Log(index);

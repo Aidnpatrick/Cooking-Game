@@ -7,6 +7,9 @@ TagManager:
   - Tile
   - Loot
   - Food
+  - Enemy
+  - Gun
+  - Bullet
   layers:
   - Default
   - TransparentFX

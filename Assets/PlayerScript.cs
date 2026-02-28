@@ -4,6 +4,9 @@ using UnityEngine.InputSystem;
 public class PlayerScript : MonoBehaviour
 {
     public InventoryScript inventoryScript;
+    public PlayerScript playerScript;
+    public GameObject playerParticle;
+    public float partCooldown = 0;
 
     private Vector2 moveInput;
     private Rigidbody2D rb;
@@ -19,6 +22,7 @@ public class PlayerScript : MonoBehaviour
 
     public float health = 10;
     public float healthCoolDown = 5;
+    public int playerNumber = 1;
     public Vector3 startinglocation = new Vector3(20, 30, 1);
 
     void Start()
@@ -36,17 +40,33 @@ public class PlayerScript : MonoBehaviour
 
     void Update()
     {
-        moveInput = Vector2.zero;
+        partCooldown -= Time.deltaTime;
 
+        moveInput = Vector2.zero;
         if (canMove)
         {
-            if (Keyboard.current.wKey.isPressed) moveInput.y += 1;
-            if (Keyboard.current.sKey.isPressed) moveInput.y -= 1;
-            if (Keyboard.current.aKey.isPressed) moveInput.x -= 1;
-            if (Keyboard.current.dKey.isPressed) moveInput.x += 1;
+            if(playerNumber == 2)
+            {
+                if (Keyboard.current.iKey.isPressed) moveInput.y += 1;
+                if (Keyboard.current.jKey.isPressed) moveInput.y -= 1;
+                if (Keyboard.current.kKey.isPressed) moveInput.x -= 1;
+                if (Keyboard.current.lKey.isPressed) moveInput.x += 1;
+            }
+            else
+            {
+                if (Keyboard.current.wKey.isPressed) moveInput.y += 1;
+                if (Keyboard.current.sKey.isPressed) moveInput.y -= 1;
+                if (Keyboard.current.aKey.isPressed) moveInput.x -= 1;
+                if (Keyboard.current.dKey.isPressed) moveInput.x += 1;
+            }
         }
 
         moveInput = moveInput.normalized;
+
+        if(moveInput.x > 0 || moveInput.y > 0)
+        {            
+
+        }
 
         if (canGrab && Keyboard.current.eKey.wasPressedThisFrame && canMove && inventoryScript.inventory.Count == 0)
         {
@@ -58,7 +78,7 @@ public class PlayerScript : MonoBehaviour
 
         if(Keyboard.current.shiftKey.isPressed)
         {
-            
+            moveInput = moveInput.normalized * 1.6f;
         }
     }
 
