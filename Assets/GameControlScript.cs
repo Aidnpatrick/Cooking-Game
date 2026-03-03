@@ -5,12 +5,19 @@ using System.Linq;
 using TMPro;
 using UnityEngine.InputSystem;
 using System.Collections;
+using NUnit.Framework;
+
 
 public class GameControlScript : MonoBehaviour
 {
+    public bool ISPAUSED = false;
+
+    public CameraScript cameraScript;
+    public PlayerScript playerScript;
     public GameObject startButton;
-    public GameObject gameCanvas, menuCanvas;
-    public GameObject foodOrderContainer;
+    public GameObject gameCanvas, menuCanvas, settingsCanvas;
+    public GameObject foodOrderContainer, levelContainer, verticalContainer;
+    public GameObject levelsUI;
     public GameObject instructions;
 
     public GameObject image;
@@ -18,26 +25,83 @@ public class GameControlScript : MonoBehaviour
     public GameObject textTemplate;
     public GameObject[] foodList;
     public GameObject player;
-    public GameObject enemyPrefab, bloodPrefab;
-    
+    public GameObject enemyPrefab, bloodPrefab, gunPrefab, bountyPrefab, knifePrefab;
+    public Coroutine enemyDeductionMain;
+    public int amountOfInspectors = 0;
     public int points = 0, money = 0;
     public float review = 5;
     public GameObject[] tiles;
-    private int[] map =
-    {
-        1,8,6,5,7,1,
-        1,0,0,0,0,1,
-        1,0,0,0,0,1,
-        1,0,0,0,0,1,
-        2,0,0,0,0,3,
-        2,0,0,0,0,3,
-        1,0,0,0,0,1,
-        1,0,0,0,0,21,
-        1,0,0,0,0,1,
-        1,1,20,4,1,1,
-    };
 
-    private string[] foodDictionary = { "Beef", "Cheese", "Bun", "Lettuce", "Gun"};
+    private List<int[]> levels = new List<int[]>
+    {
+        new int[] 
+        {        
+            1,8,6,5,7,1,
+            1,0,0,0,0,1,
+            1,0,0,0,0,1,
+            1,0,0,0,0,1,
+            2,0,0,0,0,3,
+            2,0,0,0,0,3,
+            1,0,0,0,0,1,
+            1,0,0,0,0,21,
+            0,0,0,0,0,1,
+            1,1,20,4,1,1
+        },
+        new int[]
+        {
+            1,1,5,6,1,1,
+            21,0,0,0,0,1,
+            1,0,0,0,0,1,
+            1,0,1,3,3,1,
+            1,0,0,0,0,1,
+            4,0,0,0,0,1,
+            1,2,2,1,0,1,
+            20,0,0,0,0,1,
+            0,0,0,0,0,1,
+            1,1,8,7,1,1,
+        },
+        new int[]
+        {
+            1,1,1,1,1,1,
+            1,0,0,0,0,1,
+            1,0,1,3,3,1,
+            7,0,1,1,1,1,
+            8,0,0,0,0,1,
+            1,0,0,2,0,5,
+            20,0,0,2,0,6,
+            1,0,0,1,0,1,
+            0,0,0,0,0,1,
+            1,21,1,4,1,1
+        }
+    };
+    
+    private string[] foodDictionary = { "Beef", "Cheese", "Bun", "Lettuce", "Gun", "Bounty", "Knife"};
+
+    public List<Dictionary<int, string>> itemsLevelList = new List<Dictionary<int, string>> {
+        //level 1
+        new Dictionary<int, string>
+        {
+            {37,"Gun"},
+            {54, "Bounty"},
+            {19, "Knife"}
+        }
+        ,
+        //level 2
+        new Dictionary<int, string>
+        {
+            {2,"Gun"},
+            {40, "Knife"},
+            {13, "Bounty"}
+        }
+        ,
+        //level 3
+        new Dictionary<int, string>
+        {
+            {4,"Gun"},
+            {5, "Knife"},
+            {54, "Bounty"}
+        }
+    };
 
     public Dictionary<int, string> foodNum = new Dictionary<int, string>()
     {
@@ -46,7 +110,6 @@ public class GameControlScript : MonoBehaviour
         {6, "Cheese"},
         {7, "Bun"},
         {8, "Lettuce"},
-        {9, " "}
     };
 
     private string[] cannotBeCookedList = {"Lettuce", "Bun"};
@@ -93,26 +156,78 @@ public class GameControlScript : MonoBehaviour
         gameCanvas.SetActive(false);
         menuCanvas.SetActive(true);
         instructions.SetActive(false);
-
+        levelContainer.SetActive(false);
+        GenerateLevel(Random.Range(0,2));
         canServe = false;
-        
+    }
+
+    public void LoadUpMenu()
+    {
+        levelContainer.SetActive(true);
+        verticalContainer.SetActive(false);
+        foreach(Transform j in levelContainer.transform)
+            Destroy(j.gameObject);
+
+        GameObject textClone = Instantiate(textTemplate, verticalContainer.transform);
+        textClone.GetComponent<TMP_Text>().text = "Choose the level from here.";
+
+
+        for(int i = 0; i < levels.Count; i++)
+        {
+            Debug.Log("Generating Level");
+            GameObject levelClone = Instantiate(levelsUI, levelContainer.transform);
+            levelClone.transform.GetChild(0).GetComponent<TMP_Text>().text = "Level " + (i + 1).ToString();
+            int temp = i;
+            levelClone.transform.GetChild(1).GetComponent<Button>().onClick.AddListener(() => Level(temp));
+        }
+    }
+    public void Level(int level)
+    {
+        StartGame(level);
+    }
+
+    public void GenerateLevel(int level = 0)
+    {
+            
         int index = 0;
         for(int i = 0; i < 10; i ++)
         {
             for(int j = 0; j < 6; j++)
             {
                 Vector3 position = new Vector3(i, j, 1);
-                if(map[index] == 0) Instantiate(emptyTilePrefab, position, Quaternion.identity);
+                if(levels[level][index] == 0) Instantiate(emptyTilePrefab, position, Quaternion.identity);
                 else
                 {
                     GameObject tileClone = Instantiate(tilePrefab, position, Quaternion.identity);
                     TileScript tileScript = tileClone.GetComponent<TileScript>();
-                    tileScript.typeOfTile = map[index];
+                    tileScript.typeOfTile = levels[level][index];
+                    tileScript.id = index + 1;
                     tileScript.isChosen = false;
 
                     if(tileScript.typeOfTile >= 4 && tileScript.typeOfTile <= 19)
                     {
-                        tileScript.typeOfFood = foodNum[map[index]];
+                        tileScript.typeOfFood = foodNum[levels[level][index]];
+                    }
+                    /*
+                    if(tileScript.id == 37)
+                        cameraScript.Build(tileClone, gunPrefab, new Vector3(0,0,0));
+                    if(tileScript.id == 54)
+                        cameraScript.Build(tileClone, bountyPrefab, new Vector3(0,0,0));
+                    if(tileScript.id == 19)
+                        cameraScript.Build(tileClone, knifePrefab, new Vector3(0,0,0));
+                    */
+                    foreach(KeyValuePair<int, string> dicIndex in itemsLevelList[level])
+                    {
+                        if(tileScript.id == dicIndex.Key)
+                        {
+                            cameraScript.Build(
+                                tileClone,
+                                Resources.Load<GameObject>(dicIndex.Value),
+                                new Vector3(0,0,0)
+                            );
+                            break;
+
+                        }
                     }
                 }
                 index++;
@@ -121,21 +236,37 @@ public class GameControlScript : MonoBehaviour
         
     }
 
-    public void StartGame()
+    public void StartGame(int level)
     {
+        StopAllCoroutines();
+
         startButton.SetActive(false);
         menuCanvas.SetActive(false);
         gameCanvas.SetActive(true);
+        playerScript.canMove = true;
+        cameraScript.canEdit = true;
 
         toggleFoodOrder = false;
+        
         canServe = true;
+        review = 5;
+        money = 0;
 
+        foreach(GameObject enemy in GameObject.FindGameObjectsWithTag("Enemy"))
+            Destroy(enemy);
+        foreach(GameObject loot in GameObject.FindGameObjectsWithTag("Loot"))
+            Destroy(loot);
+        foreach(GameObject tile in GameObject.FindGameObjectsWithTag("Tile"))
+            Destroy(tile);
+        foreach(GameObject emptyTile in GameObject.FindGameObjectsWithTag("EmptyTile"))
+            Destroy(emptyTile);
+
+        GenerateLevel(level);
 
         for(int i = 0; i < recipes.Count; i++)
             recipes[i] = sortIngredients(recipes[i]);
 
-        StartCoroutine(enemyDeduction());
-
+        enemyDeductionMain = StartCoroutine(enemyDeduction());
     }
     void Update()
     {
@@ -158,12 +289,17 @@ public class GameControlScript : MonoBehaviour
                 adjusted = foodList[i].name.Replace("(Clone)", "");
             else 
                 adjusted = "";
-            //Debug.Log(adjusted);
             spriteRenderer.sprite = Resources.Load<Sprite>("Images/" + adjusted);
             
-            //Debug.LogError("Error, couldnt' find" + Resources.Load<Sprite>("Images/" + adjusted));
         }
-        foodOrderCooldown -= Time.deltaTime;
+        if(!ISPAUSED )
+        {
+            enemySpawnCooldown -= Time.deltaTime;
+            foodOrderCooldown -= Time.deltaTime;            
+        }
+        settingsCanvas.SetActive(ISPAUSED);
+        
+
         if(foodOrderCooldown <= 0 && orders.Count < 5 && canServe)
         {
             MakeNewOrder();
@@ -181,17 +317,31 @@ public class GameControlScript : MonoBehaviour
         if(keyboard.pKey.wasPressedThisFrame)
             orders.Clear();
         
-        enemySpawnCooldown -= Time.deltaTime;
+
+        if(keyboard.escapeKey.wasPressedThisFrame && canServe)
+            ISPAUSED = !ISPAUSED;
+        
+
+        if(keyboard.digit0Key.wasPressedThisFrame)
+            StartGame(Random.Range(0,levels.Count));
 
     }
     public IEnumerator enemyDeduction()
     {
         while(true)
         {
-            for(int i = 0; i < GameObject.FindGameObjectsWithTag("Enemy").Length; i++)
-                review -= 0.2f;
-            if(Random.Range(0f,2f) < 0.2f)
-                SpawnEnemy();
+            if(!ISPAUSED)
+            {
+                for(int i = 0; i < GameObject.FindGameObjectsWithTag("Enemy").Length; i++)
+                    review -= 0.05f;
+                if(Random.Range(0f,2f) < 0.1f)
+                    SpawnEnemy(0);
+                if(Random.Range(0f,2.5f) < 0.1f)
+                    SpawnEnemy(1);
+            }
+
+            
+            review -= amountOfInspectors * (GameObject.FindGameObjectsWithTag("Blood").Length / 20.0f);
             yield return new WaitForSeconds(3f);
         }
     }
@@ -202,10 +352,10 @@ public class GameControlScript : MonoBehaviour
         for(int i = 0; i < tiles.Length; i++)
         {
             if(tiles[i] == tile) {
-                tiles[i].GetComponent<SpriteRenderer>().color = UnityEngine.Color.lightGray;
+                tiles[i].GetComponent<SpriteRenderer>().color = Color.lightGray;
                 target = tiles[i];
             }
-            else tiles[i].GetComponent<SpriteRenderer>().color = UnityEngine.Color.white;
+            else tiles[i].GetComponent<SpriteRenderer>().color = Color.white;
         }
         return target;
     }
@@ -221,7 +371,7 @@ public class GameControlScript : MonoBehaviour
         foreach(Transform i in foodOrderContainer.transform) Destroy(i.gameObject);
 
         GameObject textTemplateClone = Instantiate(textTemplate, foodOrderContainer.transform);
-        textTemplateClone.GetComponent<TMP_Text>().text = "$" + money + "\nPoints: " + points + "\nRating: " + review;     
+        textTemplateClone.GetComponent<TMP_Text>().text = "$" + money + "\nPoints: " + points + "\nRating: " + review + "\nHealth: " + player.GetComponent<PlayerScript>().health;    
 
         foreach(List<string> listIndex in orders)
         {
@@ -269,26 +419,21 @@ public class GameControlScript : MonoBehaviour
                 review = Mathf.Clamp(review + 0.1f, 0f, 5f);
 
                 orders.Remove(orders[i]);
-                foodOrderCooldown += 3;
+                foodOrderCooldown += 3.5f;
                 return;
             }
-            else
-            {
-                Debug.Log(servedStorage);
-            }
+
         }
-        SpawnEnemy();
+        Debug.Log("enemy is being spawned");
+        SpawnEnemy(0);
         points--;
     }
 
-    public void SpawnEnemy()
+    public void SpawnEnemy(int role)
     {
-        Vector3 position = new Vector3(
-            Random.Range(1,8),
-            Random.Range(1,4),
-            1
-        );
-        GameObject enemyClone = Instantiate(enemyPrefab, position, Quaternion.identity);
+        GameObject enemyClone = Instantiate(enemyPrefab, new Vector3(8,0,1), Quaternion.identity);
+        enemyClone.GetComponent<EnemyScript>().job = role;
+        /*
         foreach(GameObject gunIndex in GameObject.FindGameObjectsWithTag("Gun"))
         {
             if(Vector3.Distance(enemyClone.transform.position, gunIndex.transform.position) < 3.5f)
@@ -297,6 +442,7 @@ public class GameControlScript : MonoBehaviour
                 break;
             }
         }
+        */
     }
     
     public GameObject ClosestTile(GameObject currentPlayer)
@@ -328,10 +474,9 @@ public class GameControlScript : MonoBehaviour
             );
             GameObject bloodClone = Instantiate(bloodPrefab, target.transform.position + randomPosition, Quaternion.identity);
             bloodClone.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("Images/" + bloodSprites[Random.Range(0, bloodSprites.Length)]);
-            Destroy(bloodClone, 40);
         }
     }
-    public void CreateParticle(GameObject prefab, Vector3 position, float force, float deletion, bool isTrans, float angle)
+    public GameObject CreateParticle(GameObject prefab, Vector3 position, float force, float deletion, bool isTrans, float angle)
     {
         GameObject smokeClone = Instantiate(prefab, position, Quaternion.identity);
         if(isTrans)
@@ -340,5 +485,6 @@ public class GameControlScript : MonoBehaviour
         Rigidbody2D smokeBody = smokeClone.GetComponent<Rigidbody2D>();
         smokeBody.linearVelocity = smokeClone.transform.up * force;
         Destroy(smokeClone, deletion);
+        return smokeClone;
     }
 }

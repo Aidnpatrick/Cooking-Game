@@ -10,6 +10,8 @@ TagManager:
   - Enemy
   - Gun
   - Bullet
+  - EmptyTile
+  - Blood
   layers:
   - Default
   - TransparentFX

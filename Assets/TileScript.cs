@@ -10,6 +10,7 @@ public class TileScript : MonoBehaviour
     private InventoryScript inventoryScript;
     private GameObject player;
     public GameObject smokePrefab, particlePrefab, firePrefab;
+    public int id = 0;
     public bool isFull = false;
     public int typeOfTile = 1;
     public string typeOfFood = "";
@@ -35,7 +36,6 @@ public class TileScript : MonoBehaviour
         if(typeOfTile >= 4 && typeOfTile <= 19)
         {
             spriteRenderer.sprite = Resources.Load<Sprite>("Images/" + gameControlScript.foodNum[typeOfTile] + "Storage");
-            Debug.Log("Images/ " + gameControlScript.foodNum[typeOfTile] + "Storage");
         }
         if(typeOfTile == 20) spriteRenderer.sprite = Resources.Load<Sprite>("Images/ServingTableTile");
         if(typeOfTile == 21) spriteRenderer.sprite = Resources.Load<Sprite>("Images/Trashcan");
@@ -50,9 +50,9 @@ public class TileScript : MonoBehaviour
         {
             isFull = true;
             Transform child = transform.GetChild(0);
+            child.localPosition = new Vector3(0,0,1);
             if(typeOfTile == 20 && child.name.Contains("Plate"))
             {
-                Debug.Log("This food is being checked");
                 gameControlScript.CheckFood(transform.GetComponentInChildren<ItemScript>().storage);
                 Destroy(transform.GetChild(0).gameObject);
                 return;
@@ -103,9 +103,13 @@ public class TileScript : MonoBehaviour
 
         if (food.CompareTag("Food") && (typeOfTile == 3 || typeOfTile == 2)&& isCooking && !isDone)
         {
-            progressTime += Time.deltaTime;
-            smokeCooldown -= Time.deltaTime;
-            choppedCooldown -= Time.deltaTime;
+            if(!gameControlScript.ISPAUSED)
+            {
+                progressTime += Time.deltaTime;
+                smokeCooldown -= Time.deltaTime;
+                choppedCooldown -= Time.deltaTime;
+            }
+
 
             if(typeOfTile == 2) {}
 
@@ -124,8 +128,8 @@ public class TileScript : MonoBehaviour
             }
         }
         else
-            playerScript.canMove = true;
-
+        {
+        }
         if(isDone && transform.childCount > 0)
         {
             timeAfterDone += Time.deltaTime;

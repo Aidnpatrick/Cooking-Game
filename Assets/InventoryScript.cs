@@ -17,7 +17,11 @@ public class InventoryScript : MonoBehaviour
     {
         
     }
-
+    
+    public string currentItem()
+    {
+        return inventory.Count > 0 ? inventory[equippedItem - 1] : "";
+    }
     // Update is called once per frame
     void Update()
     {
@@ -50,7 +54,7 @@ public class InventoryScript : MonoBehaviour
 
         }
         
-        if (keyboard.qKey.wasPressedThisFrame)
+        if (keyboard.qKey.wasPressedThisFrame && !gameControlScript.ISPAUSED)
             DropEquippedItem();
             
     }
@@ -58,7 +62,6 @@ public class InventoryScript : MonoBehaviour
     {
 
         itemName = itemName.Replace("(Clone)", "");
-        Debug.Log(itemName);
         if (itemName.Contains("Ammo"))
         {
             ammo += 10;
@@ -74,7 +77,6 @@ public class InventoryScript : MonoBehaviour
         }
         if(Resources.Load<GameObject>(foodIndexMain) == null)
         {
-            Debug.LogError("Couldn't find: " + foodIndexMain + ", " + itemName);
             return null;
         }
         /*
@@ -125,7 +127,6 @@ public class InventoryScript : MonoBehaviour
 
             if (prefab == null)
             {
-                Debug.LogError("There isn't a " + foodIndexMain + ", " + itemName);
                 continue;
             }
 
@@ -145,18 +146,15 @@ public class InventoryScript : MonoBehaviour
 
     public void DropEquippedItem(bool isBlock = false)
     {
-        Debug.Log("Used q");
         if (inventory.Count == 0) return;
 
         int index = equippedItem - 1;
         if (index < 0 || index >= inventory.Count) return;
-        Debug.Log("This works.");
         string itemName = inventory[index];
         string foodIndexMain = findFood(itemName);
         if(itemName.Contains("Plate"))
             foodIndexMain = itemName;
             
-        Debug.Log(foodIndexMain);
         GameObject lootPrefab = Resources.Load<GameObject>(foodIndexMain);
 
         if (lootPrefab != null && !isBlock)
@@ -170,7 +168,6 @@ public class InventoryScript : MonoBehaviour
             dropped.transform.Rotate(0,0,Random.Range(-300,300));
         }
 
-        Debug.Log(index);
 
         Transform targetTransform = findPlayerTargetChild(inventory[index]);
         inventory.RemoveAt(index);
@@ -180,7 +177,6 @@ public class InventoryScript : MonoBehaviour
 
 
         UpdatePlayerChildren();
-        Debug.Log("This works too");
     }
 
     public Transform findPlayerTargetChild(string targetString)

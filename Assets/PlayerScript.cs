@@ -1,8 +1,10 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerScript : MonoBehaviour
 {
+    public GameControlScript gameControlScript;
     public InventoryScript inventoryScript;
     public PlayerScript playerScript;
     public GameObject playerParticle;
@@ -13,6 +15,7 @@ public class PlayerScript : MonoBehaviour
 
     public bool canMove = true;
     public bool canGrab = false;
+
 
     public float baseMoveSpeed = 5f;
     private float moveSpeed;
@@ -36,14 +39,26 @@ public class PlayerScript : MonoBehaviour
     public void StartGame()
     {
         canMove = true;
+        StartCoroutine(healthRegen());
     }
-
+    IEnumerator healthRegen()
+    {
+        while(true)
+        {            
+            if(health < 10 && healthCoolDown <= 0)
+            {
+                health = Mathf.Clamp(health + 1, 0, 10);
+                healthCoolDown = 5;
+            }
+            yield return new WaitForSeconds(3f);
+        }
+    }
     void Update()
     {
         partCooldown -= Time.deltaTime;
 
         moveInput = Vector2.zero;
-        if (canMove)
+        if (canMove && !gameControlScript.ISPAUSED)
         {
             if(playerNumber == 2)
             {
@@ -68,12 +83,14 @@ public class PlayerScript : MonoBehaviour
 
         }
 
-        if (canGrab && Keyboard.current.eKey.wasPressedThisFrame && canMove && inventoryScript.inventory.Count == 0)
+        if (canGrab && Keyboard.current.eKey.wasPressedThisFrame && canMove && inventoryScript.inventory.Count == 0 && !gameControlScript.ISPAUSED)
         {
             inventoryScript.AddItem(currentLoot);
             Destroy(currentLootObject);
             canGrab = false;
         }
+
+
         healthCoolDown -= Time.deltaTime;
 
         if(Keyboard.current.shiftKey.isPressed)
@@ -96,10 +113,9 @@ public class PlayerScript : MonoBehaviour
             currentLootObject = other.gameObject;
             canGrab = true;
         }
-
-        if (other.CompareTag("Tile"))
+        if(other.name.Contains("Blood") && inventoryScript.currentItem().Contains("Bounty"))
         {
-            
+            Destroy(other.gameObject);
         }
     }
 

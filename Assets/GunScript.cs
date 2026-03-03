@@ -18,7 +18,7 @@ public class GunScript : MonoBehaviour
         if(transform.parent != null && !transform.parent.name.Contains("Player"))
             transform.localPosition = new Vector3(0,0,1);
 
-        if(Keyboard.current.spaceKey.wasPressedThisFrame && inventoryScript.ammo > 0 && !gameObject.tag.Contains("Loot"))
+        if(Keyboard.current.spaceKey.wasPressedThisFrame && inventoryScript.ammo > 0 && !gameObject.tag.Contains("Loot") && transform.parent != null && transform.parent.name.Contains("Player") && name.Contains("Gun"))
         {
             GameObject bulletClone = Instantiate(bulletPrefab, transform.position, Quaternion.identity);
             GameObject target = GetClosestEnemy(gameObject);
@@ -34,8 +34,12 @@ public class GunScript : MonoBehaviour
             bulletClone.transform.Rotate(0,0,Random.Range(-5f,6f));
             Rigidbody2D bulletbp = bulletClone.GetComponent<Rigidbody2D>();
             bulletbp.linearVelocity = bulletClone.transform.right * 20;
-            inventoryScript.ammo--;
             Destroy(bulletClone, 2f);
+        }
+        
+        if(Keyboard.current.spaceKey.wasPressedThisFrame && transform.parent != null && transform.parent.name.Contains("Player") && name.Contains("Knife"))
+        {
+            
         }
     }
 

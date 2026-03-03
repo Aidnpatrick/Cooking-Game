@@ -18,6 +18,7 @@ public class CameraScript : MonoBehaviour
     public bool canEdit = true;
     public bool isOnTile = false;
     public int playerNumber = 1;
+    
     void Start()
     {
         transform.position = new Vector3(4.6f, 3.3f, -5);
@@ -41,7 +42,6 @@ public class CameraScript : MonoBehaviour
         if(!canEdit) return;
 
         GameObject target = gameControlScript.ClosestTile(player);
-
 
         if(target == null) return;
         if(!target.name.Contains("Tile")) return;
@@ -80,8 +80,6 @@ public class CameraScript : MonoBehaviour
                     
                     ps.storage.Add(childItemName);
 
-                    Debug.Log(itemPlate);
-                    Debug.Log("Added " + childItemName + "To Pluh");
                     Destroy(target.transform.GetChild(0).gameObject);
                     return;
                 }
@@ -108,13 +106,8 @@ public class CameraScript : MonoBehaviour
                 if(item.name.Contains("Plate"))
                     indexFood = item.name;
 
-                Debug.Log(indexFood);
-                Debug.Log(item.name);
                 GameObject prefab = Resources.Load<GameObject>(indexFood);
-                if(prefab == null)
-                {
-                    Debug.LogError("This isnt working: " + indexFood + " " + item.name);
-                }
+
 
                 GameObject clone = Instantiate(prefab, target.transform);
                 clone.name = item.name;
@@ -128,7 +121,6 @@ public class CameraScript : MonoBehaviour
                 Destroy(item.gameObject);
                 invScript.equippedItem = invScript.inventory.Count == 0 ? 1 : Mathf.Clamp(invScript.equippedItem, 1, invScript.inventory.Count);
                 invScript.UpdatePlayerChildren();
-                Debug.Log("Placed down " + clone.name);
                 return;
             }
 
@@ -168,7 +160,6 @@ public class CameraScript : MonoBehaviour
                     if(ps.foodCount("Bun") > 2) return;
 
                     ps.storage.Add(childItemName);
-                    Debug.Log("Added " + childItemName + "To Food");
                 }
                 /*
                 if(itemPlate.name.Contains("Plate"))
@@ -182,46 +173,24 @@ public class CameraScript : MonoBehaviour
             }
             if(keyboard.eKey.wasPressedThisFrame && target.transform.childCount == 0 && invScript.inventory.Count == 0)
             {
-                Debug.Log("Tried calling");
                 if(tileScript.typeOfFood != "")
                 {
-                    Debug.Log("Called food creation");
                     invScript.AddItem(tileScript.typeOfFood, null);
                 }
                 return;
             }
-            /*
-            if(keyboard.eKey.wasPressedThisFrame && target.transform.childCount > 0)
-            {
-                string childItemName = target.transform.GetChild(0).name;
-
-                if(tileScript.typeOfTile == 2 && !childItemName.Contains("Chopped") && !childItemName.Contains("Plate"))
-                {
-                    Debug.Log("USING CHOPPER"); 
-                    tileScript.StartCooking(1);
-                    //target.transform.GetChild(0).name = childItemName.Replace("(Clone)", "") + "Chopped";
-                }
-
-                if(tileScript.typeOfTile == 3 && !childItemName.Contains("Cooked") && !childItemName.Contains("Plate"))
-                {
-                    Debug.Log("Coming from camerascript: " + childItemName);
-                    if(gameControlScript.canBeCooked(childItemName))
-                        tileScript.StartCooking(5);
-                }
-                
-                if(tileScript.typeOfTile == 20 && childItemName.Contains("Plate"))
-                {
-                    Debug.Log("This food is being checked");
-                    gameControlScript.CheckFood(target.GetComponentInChildren<ItemScript>().storage);
-                    Destroy(target.transform.GetChild(0).gameObject);
-                }
-                
-                return;
-            }
-            */
         }
         
-
     }
+        public GameObject Build(GameObject parent, GameObject prefab, Vector3 position)
+        {
+            if (parent.name.Contains("Tile"))
+                parent.GetComponent<TileScript>().isFull = true;
 
+            GameObject obj = Instantiate(prefab, position, Quaternion.identity);
+            obj.transform.SetParent(parent.transform, false);
+            obj.transform.localPosition = position;
+            obj.name = prefab.name;
+            return obj;
+        }
 }
