@@ -41,6 +41,7 @@ public class PlayerScript : MonoBehaviour
         canMove = true;
         StartCoroutine(healthRegen());
     }
+    
     IEnumerator healthRegen()
     {
         while(true)
@@ -63,8 +64,8 @@ public class PlayerScript : MonoBehaviour
             if(playerNumber == 2)
             {
                 if (Keyboard.current.iKey.isPressed) moveInput.y += 1;
-                if (Keyboard.current.jKey.isPressed) moveInput.y -= 1;
-                if (Keyboard.current.kKey.isPressed) moveInput.x -= 1;
+                if (Keyboard.current.kKey.isPressed) moveInput.y -= 1;
+                if (Keyboard.current.jKey.isPressed) moveInput.x -= 1;
                 if (Keyboard.current.lKey.isPressed) moveInput.x += 1;
             }
             else
@@ -83,11 +84,21 @@ public class PlayerScript : MonoBehaviour
 
         }
 
-        if (canGrab && Keyboard.current.eKey.wasPressedThisFrame && canMove && inventoryScript.inventory.Count == 0 && !gameControlScript.ISPAUSED)
+        if (canGrab && canMove && inventoryScript.inventory.Count == 0 && !gameControlScript.ISPAUSED)
         {
-            inventoryScript.AddItem(currentLoot);
-            Destroy(currentLootObject);
-            canGrab = false;
+            if(Keyboard.current.eKey.wasPressedThisFrame && playerNumber == 1)
+            {
+                inventoryScript.AddItem(currentLoot);
+                Destroy(currentLootObject);
+                canGrab = false;
+            }
+            if(Keyboard.current.uKey.wasPressedThisFrame && playerNumber == 2)
+            {
+                inventoryScript.AddItem(currentLoot);
+                Destroy(currentLootObject);
+                canGrab = false;
+            }
+            
         }
 
 

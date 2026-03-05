@@ -8,7 +8,7 @@ public class TileScript : MonoBehaviour
     private GameControlScript gameControlScript;
     private PlayerScript playerScript;
     private InventoryScript inventoryScript;
-    private GameObject player;
+    private GameObject player, player2;
     public GameObject smokePrefab, particlePrefab, firePrefab;
     public int id = 0;
     public bool isFull = false;
@@ -26,6 +26,7 @@ public class TileScript : MonoBehaviour
         playerScript = GameObject.Find("Player").GetComponent<PlayerScript>();
 
         player = GameObject.Find("Player");
+        player2 = GameObject.Find("Player2");
 
         isFull = false;
         
@@ -76,7 +77,7 @@ public class TileScript : MonoBehaviour
             }
         }
         
-        if(Vector3.Distance(player.transform.position, transform.position) >= 1.75)
+        if(Vector3.Distance(player.transform.position, transform.position) >= 1.75 && Vector3.Distance(player2.transform.position, transform.position) >= 1.75)
             GetComponent<SpriteRenderer>().color = Color.white;
 
         if (transform.childCount == 0)

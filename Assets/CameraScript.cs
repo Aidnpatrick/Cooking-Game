@@ -41,7 +41,7 @@ public class CameraScript : MonoBehaviour
 
         if(!canEdit) return;
 
-        GameObject target = gameControlScript.ClosestTile(player);
+        GameObject target = ClosestTile(player);
 
         if(target == null) return;
         if(!target.name.Contains("Tile")) return;
@@ -181,6 +181,23 @@ public class CameraScript : MonoBehaviour
             }
         }
         
+    }
+    public GameObject ClosestTile(GameObject currentPlayer)
+    {
+        GameObject closest = null;
+        float shortestDistance = Mathf.Infinity;
+        Vector3 playerPos = currentPlayer.transform.position;
+        foreach (GameObject tile in GameObject.FindGameObjectsWithTag("Tile"))
+        {
+            float sqrDist = (tile.transform.position - playerPos).sqrMagnitude;
+
+            if (sqrDist < shortestDistance)
+            {
+                shortestDistance = sqrDist;
+                closest = tile;
+            }
+        }
+        return closest;
     }
         public GameObject Build(GameObject parent, GameObject prefab, Vector3 position)
         {

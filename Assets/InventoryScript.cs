@@ -6,6 +6,7 @@ public class InventoryScript : MonoBehaviour
 {
     public PlayerScript playerScript;
     public CameraScript cameraScript;
+    public CameraScript2 cameraScript2;
     public GameControlScript gameControlScript;
     public GameObject player;
 
@@ -13,6 +14,7 @@ public class InventoryScript : MonoBehaviour
     public int equippedItem = 1;
     public int ammo = 10;
     private int maxInventorySize = 5;
+    public int playerNumber = 1;
     void Start()
     {
         
@@ -54,7 +56,9 @@ public class InventoryScript : MonoBehaviour
 
         }
         
-        if (keyboard.qKey.wasPressedThisFrame && !gameControlScript.ISPAUSED)
+        if (keyboard.qKey.wasPressedThisFrame && !gameControlScript.ISPAUSED && playerNumber == 1)
+            DropEquippedItem();
+        if (keyboard.oKey.wasPressedThisFrame && !gameControlScript.ISPAUSED && playerNumber == 2)
             DropEquippedItem();
             
     }

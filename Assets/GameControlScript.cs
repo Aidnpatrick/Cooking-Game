@@ -13,9 +13,10 @@ public class GameControlScript : MonoBehaviour
     public bool ISPAUSED = false;
 
     public CameraScript cameraScript;
-    public PlayerScript playerScript;
+    public CameraScript2 cameraScript2;
+    public PlayerScript playerScript, player2Script;
     public GameObject startButton;
-    public GameObject gameCanvas, menuCanvas, settingsCanvas;
+    public GameObject gameCanvas, menuCanvas, settingsCanvas, levelMainContainer;
     public GameObject foodOrderContainer, levelContainer, verticalContainer;
     public GameObject levelsUI;
     public GameObject instructions;
@@ -24,7 +25,7 @@ public class GameControlScript : MonoBehaviour
     public GameObject tilePrefab, emptyTilePrefab, foodOrderPrefab;
     public GameObject textTemplate;
     public GameObject[] foodList;
-    public GameObject player;
+    public GameObject player, player2;
     public GameObject enemyPrefab, bloodPrefab, gunPrefab, bountyPrefab, knifePrefab;
     public Coroutine enemyDeductionMain;
     public int amountOfInspectors = 0;
@@ -114,9 +115,10 @@ public class GameControlScript : MonoBehaviour
 
     private string[] cannotBeCookedList = {"Lettuce", "Bun"};
 
-    public float foodOrderCooldown = 0, enemySpawnCooldown = 0;
+    public float foodOrderCooldown = 0, enemySpawnCooldown = 0, peaceTime = 0;
     public bool canServe = false;
     public bool toggleFoodOrder = false;
+    public bool canPlayer2Play = false;
     private string[] bloodSprites = {"Blood1", "Blood2", "Blood3"};
 
     public bool canBeCooked(string food)
@@ -156,21 +158,23 @@ public class GameControlScript : MonoBehaviour
         gameCanvas.SetActive(false);
         menuCanvas.SetActive(true);
         instructions.SetActive(false);
-        levelContainer.SetActive(false);
+        levelMainContainer.SetActive(false);
+        player2.transform.position = new Vector3(100,100,1);
         GenerateLevel(Random.Range(0,2));
         canServe = false;
+        peaceTime = 25;
     }
-
+    public void SetPlayerCount(int num)
+    {
+        if(num == 1) canPlayer2Play = false;
+        else canPlayer2Play = true;
+    }
     public void LoadUpMenu()
     {
-        levelContainer.SetActive(true);
+        levelMainContainer.SetActive(true);
         verticalContainer.SetActive(false);
         foreach(Transform j in levelContainer.transform)
             Destroy(j.gameObject);
-
-        GameObject textClone = Instantiate(textTemplate, verticalContainer.transform);
-        textClone.GetComponent<TMP_Text>().text = "Choose the level from here.";
-
 
         for(int i = 0; i < levels.Count; i++)
         {
@@ -178,7 +182,11 @@ public class GameControlScript : MonoBehaviour
             GameObject levelClone = Instantiate(levelsUI, levelContainer.transform);
             levelClone.transform.GetChild(0).GetComponent<TMP_Text>().text = "Level " + (i + 1).ToString();
             int temp = i;
-            levelClone.transform.GetChild(1).GetComponent<Button>().onClick.AddListener(() => Level(temp));
+            
+            levelClone.transform.GetChild(1).GetComponent<Image>().sprite = Resources.Load<Sprite>("Images/LevelScreenShots/Level" + (i + 1));
+            if(levelClone.transform.GetChild(1).GetComponent<Image>().sprite == null)
+                Debug.Log("Images/LevelScreenShots/Level" + (i + 1));
+            levelClone.transform.GetChild(2).GetComponent<Button>().onClick.AddListener(() => Level(temp));
         }
     }
     public void Level(int level)
@@ -243,9 +251,18 @@ public class GameControlScript : MonoBehaviour
         startButton.SetActive(false);
         menuCanvas.SetActive(false);
         gameCanvas.SetActive(true);
+
         playerScript.canMove = true;
         cameraScript.canEdit = true;
 
+        if(canPlayer2Play)
+        {
+            player2.transform.position = new Vector3(2,2,1);
+            player2Script.canMove = true;
+            cameraScript2.canEdit = true;
+            player2Script.canGrab = true;
+        }
+        
         toggleFoodOrder = false;
         
         canServe = true;
@@ -294,6 +311,9 @@ public class GameControlScript : MonoBehaviour
         }
         if(!ISPAUSED )
         {
+            if(canServe)
+                peaceTime -= Time.deltaTime;
+            
             enemySpawnCooldown -= Time.deltaTime;
             foodOrderCooldown -= Time.deltaTime;            
         }
@@ -334,14 +354,14 @@ public class GameControlScript : MonoBehaviour
             {
                 for(int i = 0; i < GameObject.FindGameObjectsWithTag("Enemy").Length; i++)
                     review -= 0.05f;
-                if(Random.Range(0f,2f) < 0.1f)
+                if(Random.Range(0f,2f) < 0.1f && peaceTime <= 0)
                     SpawnEnemy(0);
-                if(Random.Range(0f,2.5f) < 0.1f)
+                if(Random.Range(0f,2.5f) < 0.05f && peaceTime <= 0)
                     SpawnEnemy(1);
             }
 
             
-            review -= amountOfInspectors * (GameObject.FindGameObjectsWithTag("Blood").Length / 20.0f);
+            review -= amountOfInspectors * (GameObject.FindGameObjectsWithTag("Blood").Length / 25.0f);
             yield return new WaitForSeconds(3f);
         }
     }

@@ -18,7 +18,7 @@ public class GunScript : MonoBehaviour
         if(transform.parent != null && !transform.parent.name.Contains("Player"))
             transform.localPosition = new Vector3(0,0,1);
 
-        if(Keyboard.current.spaceKey.wasPressedThisFrame && inventoryScript.ammo > 0 && !gameObject.tag.Contains("Loot") && transform.parent != null && transform.parent.name.Contains("Player") && name.Contains("Gun"))
+        if((Keyboard.current.rKey.wasPressedThisFrame || Keyboard.current.hKey.wasPressedThisFrame) && inventoryScript.ammo > 0 && !gameObject.tag.Contains("Loot") && transform.parent != null && transform.parent.name.Contains("Player") && name.Contains("Gun"))
         {
             GameObject bulletClone = Instantiate(bulletPrefab, transform.position, Quaternion.identity);
             GameObject target = GetClosestEnemy(gameObject);
