@@ -60,7 +60,7 @@ public class InventoryScript : MonoBehaviour
             DropEquippedItem();
         if (keyboard.oKey.wasPressedThisFrame && !gameControlScript.ISPAUSED && playerNumber == 2)
             DropEquippedItem();
-            
+
     }
     public GameObject AddItem(string itemName, ItemScript ps = null)
     {
@@ -170,6 +170,8 @@ public class InventoryScript : MonoBehaviour
             dropped.GetComponent<BoxCollider2D>().enabled = true;
             dropped.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("Images/" + itemName.Replace("Loot", ""));
             dropped.transform.Rotate(0,0,Random.Range(-300,300));
+            if(itemName.Contains("Plate"))
+            dropped.GetComponent<ItemScript>().storage = findPlayerTargetChild(inventory[index]).GetComponent<ItemScript>().storage;
         }
 
 

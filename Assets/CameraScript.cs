@@ -1,8 +1,6 @@
 using UnityEngine;
-using TMPro;
 using UnityEngine.InputSystem;
-using UnityEngine.EventSystems;
-using Unity.VisualScripting;
+
 public class CameraScript : MonoBehaviour
 {
     public InventoryScript invScript;

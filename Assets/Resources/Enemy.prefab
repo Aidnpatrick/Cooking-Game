@@ -107,8 +107,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95188be7aa89cef4484e8c7b3098ea11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  gameControlScript: {fileID: 0}
   bodyPrefab: {fileID: 6584742487233717740, guid: 236d209b4b59fa7438207ea04e27f5ce, type: 3}
+  bulletPrefab: {fileID: 267552407032845627, guid: a2550a570588c7843a74ff2c206a90d3, type: 3}
+  job: 0
   cooldown: 10
+  health: 100
+  knifeCooldown: 0.5
+  attackCooldown: 0.5
 --- !u!61 &8367967433651434701
 BoxCollider2D:
   m_ObjectHideFlags: 0

@@ -66,7 +66,7 @@ public class CameraScript2 : MonoBehaviour
         
         if(invScript.inventory.Count > 0)
         {
-            if(keyboard.uKey.wasPressedThisFrame && target.transform.childCount == 1)
+            if(keyboard.oKey.wasPressedThisFrame && target.transform.childCount == 1)
             {
                 string childItemName = target.transform.GetChild(0).name;
                 childItemName = childItemName.Replace("(Clone)", "");
@@ -96,7 +96,7 @@ public class CameraScript2 : MonoBehaviour
 
             }
             //giving plate
-            if(keyboard.uKey.wasPressedThisFrame && target.transform.childCount == 0)
+            if(keyboard.oKey.wasPressedThisFrame && target.transform.childCount == 0)
             {
                 Transform item = invScript.findPlayerTargetChild(currentItem);
                 item.name = item.name.Substring(0, item.name.Length - 1);
@@ -127,7 +127,7 @@ public class CameraScript2 : MonoBehaviour
 
 
             //giving food to plate
-            if(keyboard.uKey.wasPressedThisFrame && target.transform.childCount == 1)
+            if(keyboard.oKey.wasPressedThisFrame && target.transform.childCount == 1)
             {
                 string childItemName = target.transform.GetChild(0).name;
                 Transform item = invScript.findPlayerTargetChild(currentItem);
@@ -147,7 +147,7 @@ public class CameraScript2 : MonoBehaviour
         }
         if(invScript.inventory.Count == 0)
         {
-            if(keyboard.uKey.wasPressedThisFrame && target.transform.childCount > 0)
+            if(keyboard.oKey.wasPressedThisFrame && target.transform.childCount > 0)
             {
                 string childItemName = target.transform.GetChild(0).name;
                 childItemName = childItemName.Replace("(Clone)", "");
@@ -171,7 +171,7 @@ public class CameraScript2 : MonoBehaviour
                 Destroy(target.transform.GetChild(0).gameObject);
                 return;
             }
-            if(keyboard.uKey.wasPressedThisFrame && target.transform.childCount == 0 && invScript.inventory.Count == 0)
+            if(keyboard.oKey.wasPressedThisFrame && target.transform.childCount == 0 && invScript.inventory.Count == 0)
             {
                 if(tileScript.typeOfFood != "")
                 {

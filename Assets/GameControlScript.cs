@@ -5,7 +5,7 @@ using System.Linq;
 using TMPro;
 using UnityEngine.InputSystem;
 using System.Collections;
-using NUnit.Framework;
+
 
 
 public class GameControlScript : MonoBehaviour
@@ -16,8 +16,8 @@ public class GameControlScript : MonoBehaviour
     public CameraScript2 cameraScript2;
     public PlayerScript playerScript, player2Script;
     public GameObject startButton;
-    public GameObject gameCanvas, menuCanvas, settingsCanvas, levelMainContainer;
-    public GameObject foodOrderContainer, levelContainer, verticalContainer;
+    public GameObject gameCanvas, menuCanvas, settingsCanvas, levelMainContainer, gameOverCanvas;
+    public GameObject foodOrderContainer, levelContainer, verticalContainer, gameOverStatsText;
     public GameObject levelsUI;
     public GameObject instructions;
 
@@ -31,10 +31,12 @@ public class GameControlScript : MonoBehaviour
     public int amountOfInspectors = 0;
     public int points = 0, money = 0;
     public float review = 5;
+    public int currentLevel = 0;
     public GameObject[] tiles;
 
     private List<int[]> levels = new List<int[]>
     {
+        //lvl 1
         new int[] 
         {        
             1,8,6,5,7,1,
@@ -48,6 +50,7 @@ public class GameControlScript : MonoBehaviour
             0,0,0,0,0,1,
             1,1,20,4,1,1
         },
+        //lvl 2
         new int[]
         {
             1,1,5,6,1,1,
@@ -61,6 +64,7 @@ public class GameControlScript : MonoBehaviour
             0,0,0,0,0,1,
             1,1,8,7,1,1,
         },
+        //lvl 3
         new int[]
         {
             1,1,1,1,1,1,
@@ -73,6 +77,50 @@ public class GameControlScript : MonoBehaviour
             1,0,0,1,0,1,
             0,0,0,0,0,1,
             1,21,1,4,1,1
+        },
+        //lvl 4
+        new int[]
+        {
+            1,1,1,4,1,1,
+            1,0,0,0,0,1,
+            5,0,0,0,0,6,
+            1,0,2,2,0,1,
+            1,0,0,0,0,1,
+            20,0,0,0,0,1,
+            1,0,3,3,0,1,
+            8,0,0,0,0,7,
+            0,0,0,0,0,1,
+            1,1,1,1,21,1
+        }
+        ,
+        //lvl 5
+        new int[] 
+        {        
+            1,1,1,1,21,1,
+            1,0,1,0,0,1,
+            3,0,1,0,0,7,
+            3,0,1,0,0,8,
+            1,0,0,0,0,1,
+            1,0,0,0,0,1,
+            6,0,0,1,0,2,
+            5,0,0,1,0,2,
+            0,0,0,1,0,1,
+            1,20,4,1,1,1
+        }
+        ,
+        //lvl 6
+        new int[] 
+        {        
+            1,1,1,3,3,1,
+            1,0,1,0,0,1,
+            7,0,1,1,0,7,
+            8,0,0,1,0,8,
+            1,0,0,0,0,1,
+            1,0,0,0,0,1,
+            20,0,4,0,0,6,
+            21,0,1,1,0,5,
+            0,0,0,1,0,1,
+            1,2,2,1,1,1
         }
     };
     
@@ -102,6 +150,31 @@ public class GameControlScript : MonoBehaviour
             {5, "Knife"},
             {54, "Bounty"}
         }
+        ,
+        //level 4
+        new Dictionary<int, string>
+        {
+            {2,"Gun"},
+            {5, "Knife"},
+            {54, "Bounty"}
+        }
+        ,
+        //level 5
+        new Dictionary<int, string>
+        {
+            {25,"Gun"},
+            {4, "Knife"},
+            {54, "Bounty"}
+        }
+        ,
+        //level 6
+        new Dictionary<int, string>
+        {
+            {30,"Gun"},
+            {7, "Knife"},
+            {54, "Bounty"}
+            
+        }
     };
 
     public Dictionary<int, string> foodNum = new Dictionary<int, string>()
@@ -115,7 +188,7 @@ public class GameControlScript : MonoBehaviour
 
     private string[] cannotBeCookedList = {"Lettuce", "Bun"};
 
-    public float foodOrderCooldown = 0, enemySpawnCooldown = 0, peaceTime = 0;
+    public float foodOrderCooldown = 0, enemySpawnCooldown = 0, peaceTime = 0, policeCooldown = 0;
     public bool canServe = false;
     public bool toggleFoodOrder = false;
     public bool canPlayer2Play = false;
@@ -153,17 +226,30 @@ public class GameControlScript : MonoBehaviour
         
     };
 
-    void Start()
+    public void Start()
     {
+        ISPAUSED = false;
         gameCanvas.SetActive(false);
         menuCanvas.SetActive(true);
+        gameOverCanvas.SetActive(false);
         instructions.SetActive(false);
         levelMainContainer.SetActive(false);
+        verticalContainer.SetActive(true);
+        player.transform.position = new Vector3(4,4,1);
         player2.transform.position = new Vector3(100,100,1);
-        GenerateLevel(Random.Range(0,2));
+
+        Restart();
+        LoadUpMenu();
+        GenerateLevel(Random.Range(0,levels.Count));
+
+        playerScript.canMove = false;
+        playerScript.canGrab = false;
+        player2Script.canMove = false;
+        player2Script.canGrab = false;
         canServe = false;
         peaceTime = 25;
     }
+
     public void SetPlayerCount(int num)
     {
         if(num == 1) canPlayer2Play = false;
@@ -171,14 +257,10 @@ public class GameControlScript : MonoBehaviour
     }
     public void LoadUpMenu()
     {
-        levelMainContainer.SetActive(true);
-        verticalContainer.SetActive(false);
-        foreach(Transform j in levelContainer.transform)
-            Destroy(j.gameObject);
-
+        if(levelContainer.transform.childCount >= levels.Count)
+            return;
         for(int i = 0; i < levels.Count; i++)
         {
-            Debug.Log("Generating Level");
             GameObject levelClone = Instantiate(levelsUI, levelContainer.transform);
             levelClone.transform.GetChild(0).GetComponent<TMP_Text>().text = "Level " + (i + 1).ToString();
             int temp = i;
@@ -196,7 +278,6 @@ public class GameControlScript : MonoBehaviour
 
     public void GenerateLevel(int level = 0)
     {
-            
         int index = 0;
         for(int i = 0; i < 10; i ++)
         {
@@ -248,12 +329,18 @@ public class GameControlScript : MonoBehaviour
     {
         StopAllCoroutines();
 
-        startButton.SetActive(false);
         menuCanvas.SetActive(false);
         gameCanvas.SetActive(true);
+        gameOverCanvas.SetActive(false);
 
         playerScript.canMove = true;
         cameraScript.canEdit = true;
+        playerScript.health = 100;
+        peaceTime = 25;
+        ISPAUSED = false;
+
+        player.transform.position = new Vector3(4,4,0);
+        playerScript.StartGame();
 
         if(canPlayer2Play)
         {
@@ -261,22 +348,16 @@ public class GameControlScript : MonoBehaviour
             player2Script.canMove = true;
             cameraScript2.canEdit = true;
             player2Script.canGrab = true;
+            player2Script.health = 100;
+            player2Script.StartGame();
         }
-        
-        toggleFoodOrder = false;
-        
-        canServe = true;
-        review = 5;
-        money = 0;
+        currentLevel = level;
 
-        foreach(GameObject enemy in GameObject.FindGameObjectsWithTag("Enemy"))
-            Destroy(enemy);
-        foreach(GameObject loot in GameObject.FindGameObjectsWithTag("Loot"))
-            Destroy(loot);
-        foreach(GameObject tile in GameObject.FindGameObjectsWithTag("Tile"))
-            Destroy(tile);
-        foreach(GameObject emptyTile in GameObject.FindGameObjectsWithTag("EmptyTile"))
-            Destroy(emptyTile);
+        toggleFoodOrder = false;
+        canServe = true;
+
+        Restart();
+
 
         GenerateLevel(level);
 
@@ -284,7 +365,51 @@ public class GameControlScript : MonoBehaviour
             recipes[i] = sortIngredients(recipes[i]);
 
         enemyDeductionMain = StartCoroutine(enemyDeduction());
+
     }
+    public void GameOver()
+    {
+        gameOverStatsText.GetComponent<TMP_Text>().text = "Orders Completed:" + points + "\nMoney Made: " + money + " \nRating: " + review;
+        gameOverCanvas.SetActive(true);
+        player.transform.position = new Vector3(100,100,1);
+        player2.transform.position = new Vector3(100,100,1);
+        GameObject[] inventorys = GameObject.FindGameObjectsWithTag("Inventory");
+        foreach(GameObject index in inventorys)
+            index.GetComponent<InventoryScript>().inventory.Clear();
+        foreach(GameObject index in player.transform)
+            Destroy(index);
+        foreach(GameObject index in player2.transform)
+            Destroy(index);
+        
+    }
+    public void Restart()
+    {
+        review = 5;
+        points = 0;
+        money = 0;
+        orders.Clear();
+
+        foreach(GameObject enemy in GameObject.FindGameObjectsWithTag("Enemy"))
+            Destroy(enemy);
+        foreach(GameObject loot in GameObject.FindGameObjectsWithTag("Loot"))
+            Destroy(loot);
+        foreach(GameObject tile in GameObject.FindGameObjectsWithTag("Tile"))
+            Destroy(tile);
+        foreach(GameObject tile in GameObject.FindGameObjectsWithTag("Blood"))
+            Destroy(tile);
+        foreach(GameObject emptyTile in GameObject.FindGameObjectsWithTag("EmptyTile"))
+            Destroy(emptyTile);
+            
+        GameObject[] inventorys = GameObject.FindGameObjectsWithTag("Inventory");
+        foreach(GameObject index in inventorys)
+            index.GetComponent<InventoryScript>().inventory.Clear();
+        foreach(Transform index in player.transform)
+            Destroy(index.gameObject);
+        foreach(Transform index in player2.transform)
+            Destroy(index.gameObject);
+        
+    }
+
     void Update()
     {
         Keyboard keyboard = Keyboard.current;
@@ -307,15 +432,16 @@ public class GameControlScript : MonoBehaviour
             else 
                 adjusted = "";
             spriteRenderer.sprite = Resources.Load<Sprite>("Images/" + adjusted);
-            
         }
-        if(!ISPAUSED )
+
+        if(!ISPAUSED)
         {
             if(canServe)
                 peaceTime -= Time.deltaTime;
             
             enemySpawnCooldown -= Time.deltaTime;
-            foodOrderCooldown -= Time.deltaTime;            
+            foodOrderCooldown -= Time.deltaTime;
+            policeCooldown -= Time.deltaTime;        
         }
         settingsCanvas.SetActive(ISPAUSED);
         
@@ -340,10 +466,15 @@ public class GameControlScript : MonoBehaviour
 
         if(keyboard.escapeKey.wasPressedThisFrame && canServe)
             ISPAUSED = !ISPAUSED;
-        
 
-        if(keyboard.digit0Key.wasPressedThisFrame)
-            StartGame(Random.Range(0,levels.Count));
+        if(policeCooldown <= 0 && review <= 0)
+        {
+            Debug.Log("PLLOOOIIICEEE");
+            //SpawnEnemy(2);
+            StartCoroutine(Police());
+            policeCooldown = 100;
+        }
+
 
     }
     public IEnumerator enemyDeduction()
@@ -358,11 +489,18 @@ public class GameControlScript : MonoBehaviour
                     SpawnEnemy(0);
                 if(Random.Range(0f,2.5f) < 0.05f && peaceTime <= 0)
                     SpawnEnemy(1);
+                
+                review -= amountOfInspectors * (GameObject.FindGameObjectsWithTag("Blood").Length / 25.0f);
             }
-
-            
-            review -= amountOfInspectors * (GameObject.FindGameObjectsWithTag("Blood").Length / 25.0f);
             yield return new WaitForSeconds(3f);
+        }
+    }
+    IEnumerator Police()
+    {
+        for(int i = 0; i < 4; i++)
+        {
+            SpawnEnemy(2);
+            yield return new WaitForSeconds(0.3f);
         }
     }
 
@@ -391,7 +529,7 @@ public class GameControlScript : MonoBehaviour
         foreach(Transform i in foodOrderContainer.transform) Destroy(i.gameObject);
 
         GameObject textTemplateClone = Instantiate(textTemplate, foodOrderContainer.transform);
-        textTemplateClone.GetComponent<TMP_Text>().text = "$" + money + "\nPoints: " + points + "\nRating: " + review + "\nHealth: " + player.GetComponent<PlayerScript>().health;    
+        textTemplateClone.GetComponent<TMP_Text>().text = "$" + money + "\nPoints: " + points + "\nRating: " + review;    
 
         foreach(List<string> listIndex in orders)
         {
@@ -453,16 +591,6 @@ public class GameControlScript : MonoBehaviour
     {
         GameObject enemyClone = Instantiate(enemyPrefab, new Vector3(8,0,1), Quaternion.identity);
         enemyClone.GetComponent<EnemyScript>().job = role;
-        /*
-        foreach(GameObject gunIndex in GameObject.FindGameObjectsWithTag("Gun"))
-        {
-            if(Vector3.Distance(enemyClone.transform.position, gunIndex.transform.position) < 3.5f)
-            {
-                Destroy(enemyClone);
-                break;
-            }
-        }
-        */
     }
     
     public GameObject ClosestTile(GameObject currentPlayer)

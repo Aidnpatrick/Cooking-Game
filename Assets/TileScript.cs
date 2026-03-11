@@ -1,6 +1,4 @@
-using System;
 using System.Collections;
-using UnityEditor;
 using UnityEngine;
 
 public class TileScript : MonoBehaviour
@@ -177,4 +175,9 @@ public class TileScript : MonoBehaviour
         cookDuration = cookingTime;
     }
 
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if(collision.CompareTag("Bullet"))
+            Destroy(collision.gameObject);
+    }
 }

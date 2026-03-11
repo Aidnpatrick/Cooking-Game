@@ -23,7 +23,7 @@ public class PlayerScript : MonoBehaviour
     private string currentLoot = "";
     private GameObject currentLootObject = null;
 
-    public float health = 10;
+    public float health = 100;
     public float healthCoolDown = 5;
     public int playerNumber = 1;
     public Vector3 startinglocation = new Vector3(20, 30, 1);
@@ -46,9 +46,9 @@ public class PlayerScript : MonoBehaviour
     {
         while(true)
         {            
-            if(health < 10 && healthCoolDown <= 0)
+            if(health < 100 && healthCoolDown <= 0)
             {
-                health = Mathf.Clamp(health + 1, 0, 10);
+                health = Mathf.Clamp(health + 10, 0, 100);
                 healthCoolDown = 5;
             }
             yield return new WaitForSeconds(3f);
@@ -83,41 +83,59 @@ public class PlayerScript : MonoBehaviour
         {            
 
         }
+        healthCoolDown -= Time.deltaTime;
 
         if (canGrab && canMove && inventoryScript.inventory.Count == 0 && !gameControlScript.ISPAUSED)
         {
             if(Keyboard.current.eKey.wasPressedThisFrame && playerNumber == 1)
             {
+                if(currentLootObject == null) return;
+                if(!currentLootObject.name.Contains("Plate"))
                 inventoryScript.AddItem(currentLoot);
+                else
+                inventoryScript.AddItem(currentLoot, currentLootObject.GetComponent<ItemScript>());
+
                 Destroy(currentLootObject);
                 canGrab = false;
             }
             if(Keyboard.current.uKey.wasPressedThisFrame && playerNumber == 2)
             {
+                if(currentLootObject == null) return;
+                if(!currentLootObject.name.Contains("Plate"))
                 inventoryScript.AddItem(currentLoot);
+                else
+                inventoryScript.AddItem(currentLoot, currentLootObject.GetComponent<ItemScript>());
                 Destroy(currentLootObject);
                 canGrab = false;
             }
             
         }
 
-
-        healthCoolDown -= Time.deltaTime;
-
-        if(Keyboard.current.shiftKey.isPressed)
-        {
-            moveInput = moveInput.normalized * 1.6f;
-        }
     }
 
     void FixedUpdate()
     {
         rb.linearVelocity = moveInput * moveSpeed;
     }
+    public void checkHealth()
+    {
+        if(health <= 0)
+        {
+            transform.position = new Vector3(100,100,1);
+            gameControlScript.GameOver();
+        }
+    }
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        
+        if(other.CompareTag("Bullet") && !other.name.Contains("Player"))
+        {
+            health -= 10;
+            gameControlScript.Blood(1,gameObject);
+            checkHealth();
+            Destroy(other.gameObject);
+        }
+
         if (other.CompareTag("Loot"))
         {
             currentLoot = other.gameObject.name.Replace("Loot", "");
@@ -143,5 +161,6 @@ public class PlayerScript : MonoBehaviour
         {
             moveSpeed = baseMoveSpeed;
         }
+        
     }
 }

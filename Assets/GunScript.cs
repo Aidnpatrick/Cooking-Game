@@ -6,8 +6,11 @@ public class GunScript : MonoBehaviour
     public GameObject player;
     public GameObject bulletPrefab;
     public InventoryScript inventoryScript;
+    public GameObject closestMain;
+    public float cooldown = 0;
     void Start()
     {
+        cooldown = 0;
         player = GameObject.Find("Player");
         inventoryScript = GameObject.Find("Inventory").GetComponent<InventoryScript>();
     }
@@ -15,10 +18,11 @@ public class GunScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        cooldown -= Time.deltaTime;
         if(transform.parent != null && !transform.parent.name.Contains("Player"))
             transform.localPosition = new Vector3(0,0,1);
 
-        if((Keyboard.current.rKey.wasPressedThisFrame || Keyboard.current.hKey.wasPressedThisFrame) && inventoryScript.ammo > 0 && !gameObject.tag.Contains("Loot") && transform.parent != null && transform.parent.name.Contains("Player") && name.Contains("Gun"))
+        if((Keyboard.current.rKey.wasPressedThisFrame || Keyboard.current.hKey.wasPressedThisFrame) && inventoryScript.ammo > 0 && !gameObject.tag.Contains("Loot") && transform.parent != null && transform.parent.name.Contains("Player") && name.Contains("Gun") && cooldown <= 0)
         {
             GameObject bulletClone = Instantiate(bulletPrefab, transform.position, Quaternion.identity);
             GameObject target = GetClosestEnemy(gameObject);
@@ -28,12 +32,16 @@ public class GunScript : MonoBehaviour
                 direction = player.transform.position + new Vector3(10,0,0);
             else
                 direction = target.transform.position - transform.position;
+            
+            bulletClone.transform.position += new Vector3(0.65f,0f,0);
             float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
             bulletClone.transform.rotation = Quaternion.Euler(0f, 0f, angle);
 
             bulletClone.transform.Rotate(0,0,Random.Range(-5f,6f));
             Rigidbody2D bulletbp = bulletClone.GetComponent<Rigidbody2D>();
             bulletbp.linearVelocity = bulletClone.transform.right * 20;
+            bulletClone.name += "Player";
+            cooldown = 0.25f;
             Destroy(bulletClone, 2f);
         }
         
@@ -43,7 +51,7 @@ public class GunScript : MonoBehaviour
         }
     }
 
-    public static GameObject GetClosestEnemy(GameObject target)
+    public  GameObject GetClosestEnemy(GameObject target)
     {
         GameObject closest = null;
         float shortestDistance = Mathf.Infinity;
@@ -60,7 +68,7 @@ public class GunScript : MonoBehaviour
                 }
             }
         }
-
+        closestMain = closest;
         return closest;
     }
 }

@@ -12,6 +12,7 @@ TagManager:
   - Bullet
   - EmptyTile
   - Blood
+  - Inventory
   layers:
   - Default
   - TransparentFX
