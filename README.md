@@ -2,6 +2,22 @@
 
 This game is a multiplayer/singleplayer fast-paced cooking simulator.
 
+Controls:
+- TAB: Toggle orders(Even if not visible, the orders will still come in).
+- Escape: Pause.
+- 
+
+PLAYER ONE:
+- WASD: Move around.
+- E: Pick up item/plate, place item/plate, serve plate.
+- Q: Drop item/plate.
+- R: Shoot gun if equipped.
+PLAYER TWO:
+- IJKL: Move around.
+- U: Pick up item/plate, place item/plate, serve plate.
+- O: Drop item/plate.
+- H: Shoot gun if equipped.
+
 Rules:
 - You have to serve people food that appear on the top of the screen(You don't have to finish the first order first)
 - If you successfully satisfy an order, you get more money and points. Also, your rating goes up.
@@ -22,3 +38,5 @@ How to prepare Food Items:
 
 How to make a dish: 
 - Grab a plate from the plate crate and place it on a desired table
+- Get the food from the food crates. Put down the ingredients onto the plate. Repeat this step until the things on the plate is the same as the things on the order. The order of the things on the plate do not matter, just has to contain it all.
+- Serve the dish by placing it onto the white table thingy with the triangle.
