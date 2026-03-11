@@ -61,3 +61,12 @@ This game is a multiplayer/singleplayer fast-paced cooking simulator.
 - Get the food from the food crates. Put down the ingredients onto the plate. Repeat this step until the things on the plate is the same as the things on the order.
 - The order of the things on the plate do not matter, just has to contain it all.
 - Serve the dish by placing it onto the white table thingy with the triangle.
+
+---
+
+## Enemies
+
+- **Angry Customer**: Comes when you mess up their order. They aren't very strong, but they can leave a bad review.
+- **Inspector**: They will come to your kitchen to check if anything is dirty or not. If you have blood on your floor, they will drastically decrease your rating.
+- **Police**: If your rating hits zero, a group of police will come to pay you a visit. They are strong and will shoot you on sight. If you see them, you are screwed.
+
