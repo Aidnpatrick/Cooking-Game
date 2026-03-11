@@ -12,6 +12,7 @@ PLAYER ONE:
 - E: Pick up item/plate, place item/plate, serve plate.
 - Q: Drop item/plate.
 - R: Shoot gun if equipped.
+
 PLAYER TWO:
 - IJKL: Move around.
 - U: Pick up item/plate, place item/plate, serve plate.
