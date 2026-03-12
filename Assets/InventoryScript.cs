@@ -58,7 +58,7 @@ public class InventoryScript : MonoBehaviour
         
         if (keyboard.qKey.wasPressedThisFrame && !gameControlScript.ISPAUSED && playerNumber == 1)
             DropEquippedItem();
-        if (keyboard.oKey.wasPressedThisFrame && !gameControlScript.ISPAUSED && playerNumber == 2)
+        if (keyboard.uKey.wasPressedThisFrame && !gameControlScript.ISPAUSED && playerNumber == 2)
             DropEquippedItem();
 
     }

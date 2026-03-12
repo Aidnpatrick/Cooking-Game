@@ -98,7 +98,8 @@ public class PlayerScript : MonoBehaviour
                 Destroy(currentLootObject);
                 canGrab = false;
             }
-            if(Keyboard.current.uKey.wasPressedThisFrame && playerNumber == 2)
+            if(Keyboard.current.oKey.wasPressedThisFrame && playerNumber == 2)
+            
             {
                 if(currentLootObject == null) return;
                 if(!currentLootObject.name.Contains("Plate"))

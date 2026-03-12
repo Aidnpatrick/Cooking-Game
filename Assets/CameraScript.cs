@@ -3,6 +3,8 @@ using UnityEngine.InputSystem;
 
 public class CameraScript : MonoBehaviour
 {
+    public AudioSource audioSource;
+    public AudioClip thud;
     public InventoryScript invScript;
     public PlayerScript playerScript;
     public GameControlScript gameControlScript;
@@ -77,13 +79,14 @@ public class CameraScript : MonoBehaviour
                     if(ps.foodCount("Bun") > 2) return;
                     
                     ps.storage.Add(childItemName);
-
+                    audioSource.PlayOneShot(thud);
                     Destroy(target.transform.GetChild(0).gameObject);
                     return;
                 }
                 
                 else if(invScript.inventory.Count == 0)
                 {
+                    audioSource.PlayOneShot(thud);
                     invScript.AddItem(childItemName, null);
                     Transform newPlate = invScript.findPlayerTargetChild(currentItem);
                     ItemScript ps = newPlate.GetComponent<ItemScript>();
@@ -96,6 +99,7 @@ public class CameraScript : MonoBehaviour
             //giving plate
             if(keyboard.eKey.wasPressedThisFrame && target.transform.childCount == 0)
             {
+                audioSource.PlayOneShot(thud);
                 Transform item = invScript.findPlayerTargetChild(currentItem);
                 item.name = item.name.Substring(0, item.name.Length - 1);
 
@@ -127,6 +131,8 @@ public class CameraScript : MonoBehaviour
             //giving food to plate
             if(keyboard.eKey.wasPressedThisFrame && target.transform.childCount == 1)
             {
+                audioSource.PlayOneShot(thud);
+
                 string childItemName = target.transform.GetChild(0).name;
                 Transform item = invScript.findPlayerTargetChild(currentItem);
                 if(childItemName.Contains("Plate") && !currentItem.Contains("Plate"))
@@ -145,8 +151,11 @@ public class CameraScript : MonoBehaviour
         }
         if(invScript.inventory.Count == 0)
         {
+
             if(keyboard.eKey.wasPressedThisFrame && target.transform.childCount > 0)
             {
+                audioSource.PlayOneShot(thud);
+
                 string childItemName = target.transform.GetChild(0).name;
                 childItemName = childItemName.Replace("(Clone)", "");
                 Transform itemPlate = invScript.findPlayerTargetChild(currentItem);
@@ -171,6 +180,8 @@ public class CameraScript : MonoBehaviour
             }
             if(keyboard.eKey.wasPressedThisFrame && target.transform.childCount == 0 && invScript.inventory.Count == 0)
             {
+                audioSource.PlayOneShot(thud);
+
                 if(tileScript.typeOfFood != "")
                 {
                     invScript.AddItem(tileScript.typeOfFood, null);

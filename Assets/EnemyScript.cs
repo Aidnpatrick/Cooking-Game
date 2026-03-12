@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class EnemyScript : MonoBehaviour
 {
+    public AudioSource audioSource;
+    public AudioClip hey, shooting;
     //public InventoryScript inventoryScript;
     public GameControlScript gameControlScript;
 
@@ -19,7 +21,7 @@ public class EnemyScript : MonoBehaviour
     private GameObject destinedTarget = null;
     void Start()
     {
-
+        audioSource.PlayOneShot(hey);
         //inventoryScript = GameObject.Find("Inventory").GetComponent<InventoryScript>();
         gameControlScript = GameObject.Find("GameControl").GetComponent<GameControlScript>();
 
@@ -100,6 +102,7 @@ public class EnemyScript : MonoBehaviour
             Rigidbody2D bulletbp = bulletClone.GetComponent<Rigidbody2D>();
             bulletbp.linearVelocity = bulletClone.transform.right * 20;
             bulletClone.name += "Enemy";
+            audioSource.PlayOneShot(shooting);
             attackCooldown = 0.15f;
             Destroy(bulletClone, 2f);
         }

@@ -11,7 +11,8 @@ using System.Collections;
 public class GameControlScript : MonoBehaviour
 {
     public bool ISPAUSED = false;
-
+    public AudioSource audioSource;
+    public AudioClip pop, hey;
     public CameraScript cameraScript;
     public CameraScript2 cameraScript2;
     public PlayerScript playerScript, player2Script;
@@ -20,7 +21,6 @@ public class GameControlScript : MonoBehaviour
     public GameObject foodOrderContainer, levelContainer, verticalContainer, gameOverStatsText;
     public GameObject levelsUI;
     public GameObject instructions;
-
     public GameObject image;
     public GameObject tilePrefab, emptyTilePrefab, foodOrderPrefab;
     public GameObject textTemplate;
@@ -578,6 +578,7 @@ public class GameControlScript : MonoBehaviour
 
                 orders.Remove(orders[i]);
                 foodOrderCooldown += 3.5f;
+                audioSource.PlayOneShot(pop);
                 return;
             }
 
@@ -589,6 +590,8 @@ public class GameControlScript : MonoBehaviour
 
     public void SpawnEnemy(int role)
     {
+        audioSource.PlayOneShot(hey);
+
         GameObject enemyClone = Instantiate(enemyPrefab, new Vector3(8,0,1), Quaternion.identity);
         enemyClone.GetComponent<EnemyScript>().job = role;
     }

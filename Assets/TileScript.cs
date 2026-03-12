@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class TileScript : MonoBehaviour
 {
+    public AudioSource audioSource;
+    public AudioClip cooking, chopping;
     private GameControlScript gameControlScript;
     private PlayerScript playerScript;
     private InventoryScript inventoryScript;
@@ -38,7 +40,6 @@ public class TileScript : MonoBehaviour
         }
         if(typeOfTile == 20) spriteRenderer.sprite = Resources.Load<Sprite>("Images/ServingTableTile");
         if(typeOfTile == 21) spriteRenderer.sprite = Resources.Load<Sprite>("Images/Trashcan");
-
     }
 
     public float cookDuration = 5f;
@@ -162,7 +163,7 @@ public class TileScript : MonoBehaviour
             food.name = cleanName + "Chopped";
             food.name = inventoryScript.orderWords(food.name);
         }
-
+        audioSource.Stop();
         isDone = true;
         isCooking = false;
     }
@@ -173,6 +174,10 @@ public class TileScript : MonoBehaviour
         isDone = false;
         this.isCooking = isCooking;
         cookDuration = cookingTime;
+        if(cookDuration == 5)
+        audioSource.PlayOneShot(cooking);
+        else if(cookDuration < 5)
+        audioSource.PlayOneShot(chopping);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)

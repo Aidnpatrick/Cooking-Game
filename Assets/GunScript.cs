@@ -4,6 +4,8 @@ using UnityEngine.InputSystem;
 public class GunScript : MonoBehaviour
 {
     public GameObject player;
+    public AudioSource audioSource;
+    public AudioClip shoot, cocking, knife;
     public GameObject bulletPrefab;
     public InventoryScript inventoryScript;
     public GameObject closestMain;
@@ -13,6 +15,12 @@ public class GunScript : MonoBehaviour
         cooldown = 0;
         player = GameObject.Find("Player");
         inventoryScript = GameObject.Find("Inventory").GetComponent<InventoryScript>();
+        if(transform.parent != null && !transform.parent.name.Contains("Player"))
+            transform.localPosition = new Vector3(0,0,1);
+        if(name.Contains("Gun") && transform.parent.name.Contains("Player"))
+        audioSource.PlayOneShot(cocking);
+        if(name.Contains("Knife") && transform.parent.name.Contains("Player"))
+        audioSource.PlayOneShot(knife);
     }
 
     // Update is called once per frame
@@ -22,8 +30,10 @@ public class GunScript : MonoBehaviour
         if(transform.parent != null && !transform.parent.name.Contains("Player"))
             transform.localPosition = new Vector3(0,0,1);
 
+
         if((Keyboard.current.rKey.wasPressedThisFrame || Keyboard.current.hKey.wasPressedThisFrame) && inventoryScript.ammo > 0 && !gameObject.tag.Contains("Loot") && transform.parent != null && transform.parent.name.Contains("Player") && name.Contains("Gun") && cooldown <= 0)
         {
+            audioSource.PlayOneShot(shoot);
             GameObject bulletClone = Instantiate(bulletPrefab, transform.position, Quaternion.identity);
             GameObject target = GetClosestEnemy(gameObject);
             Vector3 direction;
