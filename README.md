@@ -37,6 +37,15 @@ This game is a multiplayer/singleplayer fast-paced cooking simulator.
 - To not get attacked by a customer, use your weapons that are located around the kitchen.
 
 ---
+## Tiles
+
+- **Normal Tile**: A normal table. Used for placing items.
+- **Chopping Tile**: For chopping things that can be chopped.
+- **Cooking TIle**: For cooking things that can be cooked.
+- **Serving TIle**: Place a plate on it and it will serve food.
+- **Trashcan TIle**: Throw away things(Anything goes in except for the plate itself) by placing on it.
+
+---
 
 ## Non-food Items
 
