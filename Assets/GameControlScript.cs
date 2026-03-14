@@ -5,6 +5,7 @@ using System.Linq;
 using TMPro;
 using UnityEngine.InputSystem;
 using System.Collections;
+using System.IO.IsolatedStorage;
 
 
 
@@ -17,7 +18,7 @@ public class GameControlScript : MonoBehaviour
     public CameraScript2 cameraScript2;
     public PlayerScript playerScript, player2Script;
     public GameObject startButton;
-    public GameObject gameCanvas, menuCanvas, settingsCanvas, levelMainContainer, gameOverCanvas;
+    public GameObject gameCanvas, menuCanvas, settingsCanvas, levelMainContainer, gameOverCanvas, instructionsCanvas;
     public GameObject foodOrderContainer, levelContainer, verticalContainer, gameOverStatsText;
     public GameObject levelsUI;
     public GameObject instructions;
@@ -29,6 +30,7 @@ public class GameControlScript : MonoBehaviour
     public GameObject enemyPrefab, bloodPrefab, gunPrefab, bountyPrefab, knifePrefab;
     public Coroutine enemyDeductionMain;
     public int amountOfInspectors = 0;
+    public bool isTABOpen = false;
     public int points = 0, money = 0;
     public float review = 5;
     public int currentLevel = 0;
@@ -225,7 +227,8 @@ public class GameControlScript : MonoBehaviour
     {
         
     };
-
+    
+    
     public void Start()
     {
         ISPAUSED = false;
@@ -237,11 +240,11 @@ public class GameControlScript : MonoBehaviour
         verticalContainer.SetActive(true);
         player.transform.position = new Vector3(4,4,1);
         player2.transform.position = new Vector3(100,100,1);
-
+        instructionsCanvas.SetActive(false);
         Restart();
         LoadUpMenu();
         GenerateLevel(Random.Range(0,levels.Count));
-
+        isTABOpen = false;
         playerScript.canMove = false;
         playerScript.canGrab = false;
         player2Script.canMove = false;
@@ -271,8 +274,11 @@ public class GameControlScript : MonoBehaviour
             levelClone.transform.GetChild(2).GetComponent<Button>().onClick.AddListener(() => Level(temp));
         }
     }
+
+    
     public void Level(int level)
     {
+
         StartGame(level);
     }
 
@@ -324,7 +330,7 @@ public class GameControlScript : MonoBehaviour
         }
         
     }
-
+    
     public void StartGame(int level)
     {
         StopAllCoroutines();
@@ -363,10 +369,20 @@ public class GameControlScript : MonoBehaviour
 
         for(int i = 0; i < recipes.Count; i++)
             recipes[i] = sortIngredients(recipes[i]);
-
+        isTABOpen = false;
         enemyDeductionMain = StartCoroutine(enemyDeduction());
 
+
+        isTABOpen =  !isTABOpen;
+        if(!ISPAUSED) 
+        ISPAUSED = !ISPAUSED;
+        
+        toggleFoodOrder = !toggleFoodOrder;
+        instructionsCanvas.SetActive(toggleFoodOrder);
+        MakeNewOrder(3);
+        foodOrderCooldown = 20;
     }
+    
     public void GameOver()
     {
         gameOverStatsText.GetComponent<TMP_Text>().text = "Orders Completed:" + points + "\nMoney Made: " + money + " \nRating: " + review;
@@ -380,6 +396,7 @@ public class GameControlScript : MonoBehaviour
             Destroy(index);
         foreach(GameObject index in player2.transform)
             Destroy(index);
+            isTABOpen = false;
         
     }
     public void Restart()
@@ -454,17 +471,22 @@ public class GameControlScript : MonoBehaviour
 
         RefreshOrders();
 
-        if(keyboard.tabKey.wasPressedThisFrame)
+        if(keyboard.tabKey.wasPressedThisFrame && canServe)
         {
+            isTABOpen =  !isTABOpen;
+            if(!ISPAUSED) 
+            ISPAUSED = !ISPAUSED;
+            
             toggleFoodOrder = !toggleFoodOrder;
-            foodOrderContainer.SetActive(toggleFoodOrder);
+            instructionsCanvas.SetActive(toggleFoodOrder);
         }
+        
 
         if(keyboard.pKey.wasPressedThisFrame)
             orders.Clear();
         
 
-        if(keyboard.escapeKey.wasPressedThisFrame && canServe)
+        if(keyboard.escapeKey.wasPressedThisFrame && canServe && !isTABOpen)
             ISPAUSED = !ISPAUSED;
 
         if(policeCooldown <= 0 && review <= 0)
@@ -474,9 +496,12 @@ public class GameControlScript : MonoBehaviour
             StartCoroutine(Police());
             policeCooldown = 100;
         }
-
-
     }
+    public void TogglePause()
+    {
+        ISPAUSED = !ISPAUSED;
+    }
+
     public IEnumerator enemyDeduction()
     {
         while(true)
@@ -518,9 +543,11 @@ public class GameControlScript : MonoBehaviour
         return target;
     }
 
-    public void MakeNewOrder()
+    public void MakeNewOrder(int num = -1)
     {
-        int randomDish = Random.Range(0, recipes.Count);
+        int randomDish = num;
+        if(randomDish == -1)
+            randomDish = Random.Range(0, recipes.Count);
         orders.Add(recipes[randomDish]);
     }
 
@@ -529,7 +556,10 @@ public class GameControlScript : MonoBehaviour
         foreach(Transform i in foodOrderContainer.transform) Destroy(i.gameObject);
 
         GameObject textTemplateClone = Instantiate(textTemplate, foodOrderContainer.transform);
-        textTemplateClone.GetComponent<TMP_Text>().text = "$" + money + "\nPoints: " + points + "\nRating: " + review;    
+        textTemplateClone.GetComponent<TMP_Text>().text = "$" + money + "\nPoints: " + points + "\nRating: " + review;   
+        GameObject ORDERtext = Instantiate(textTemplate, foodOrderContainer.transform);
+        ORDERtext.GetComponent<TMP_Text>().fontSize = 30;
+        ORDERtext.GetComponent<TMP_Text>().text = "ORDERS ->";
 
         foreach(List<string> listIndex in orders)
         {
